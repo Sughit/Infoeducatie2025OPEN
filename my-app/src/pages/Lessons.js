@@ -1,30 +1,33 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
-const lessons = [
-  {
-    title: 'Ochi',
-    slug: 'eye',
-    description: 'Învață să desenezi ochii realist, cu umbre și expresivitate.',
-  },
-  {
-    title: 'Fața',
-    slug: 'face',
-    description: 'Descoperă proporțiile corecte ale feței umane.',
-  },
-  {
-    title: 'Silueta',
-    slug: 'silhouette',
-    description: 'Exersează conturul corpului și poziționarea acestuia.',
-  },
-  {
-    title: 'Întreg portretul',
-    slug: 'whole',
-    description: 'Combină tot ce ai învățat pentru a realiza un portret complet.',
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 const Lectii = () => {
+  const { t } = useTranslation();
+
+  const lessons = [
+    {
+      titleKey: 'eye',
+      slug: 'eye',
+      descriptionKey: 'eye_desc',
+    },
+    {
+      titleKey: 'face',
+      slug: 'face',
+      descriptionKey: 'face_desc',
+    },
+    {
+      titleKey: 'silhouette',
+      slug: 'silhouette',
+      descriptionKey: 'silhouette_desc',
+    },
+    {
+      titleKey: 'bust',
+      slug: 'bust', // Changed slug to 'bust' for consistency
+      descriptionKey: 'bust_desc',
+    },
+  ];
+
   return (
     <div
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-24 px-4"
@@ -47,13 +50,13 @@ const Lectii = () => {
             className="text-xl font-bold mt-0 mb-2"
             style={{ color: '#297373' }}
           >
-            {lesson.title}
+            {t(lesson.titleKey)}
           </h2>
           <p
             className="mt-2"
-            style={{ color: '#4B5563' }} // echivalent text-gray-700
+            style={{ color: '#4B5563' }}
           >
-            {lesson.description}
+            {t(lesson.descriptionKey)}
           </p>
         </Link>
       ))}

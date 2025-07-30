@@ -18,7 +18,7 @@ const Navbar = () => {
           <Link to="/" className="hover:text-[#FF8552] transition duration-200">ArtPortrait</Link>
         </div>
 
-        {/* Desktop Menu */}
+        {/* Desktop*/}
         <div className="hidden md:flex items-center space-x-6">
           <Link
             to="/lessons"
@@ -48,7 +48,6 @@ const Navbar = () => {
             {t("Admin")}
           </Link>
 
-          {/* Language switcher */}
           <div className="space-x-2 ml-4">
             <button
               onClick={() => changeLanguage('ro')}
@@ -65,7 +64,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile toggle */}
+        {/*toggle */}
         <div className="md:hidden">
           <button
             onClick={() => setOpen(!open)}
@@ -76,7 +75,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/*Dropdown */}
       {open && (
         <div className="md:hidden px-4 pb-4 space-y-3 bg-[#E6E6E6] shadow-inner">
           <Link

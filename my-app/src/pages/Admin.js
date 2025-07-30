@@ -31,7 +31,6 @@ export default function Admin() {
     const selected = files[0];
     setFile(selected);
 
-    // Folosește FileReader pentru preview
     const reader = new FileReader();
     reader.onload = () => {
       setPreview(reader.result);

@@ -23,7 +23,6 @@ export default function Home() {
       className="overflow-y-auto snap-y snap-mandatory h-screen scroll-smooth"
       style={{ backgroundColor: "#E6E6E6" }}
     >
-      {/* HERO SECTION - Fundal deschis #E6E6E6 cu text și accente #297373 */}
       <section
         id="intro"
         className="snap-start h-screen flex justify-center items-center"
@@ -67,7 +66,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECȚIUNEA LECȚII - Fundal alb cu carduri în #297373 și titluri #FF8552 */}
       <section
         id="lessons"
         className="snap-start h-screen flex flex-col justify-center items-center py-16 px-6"
@@ -128,7 +126,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SECȚIUNEA JOCURI - Fundal #E6E6E6, carduri în alb cu titluri #297373 și butoane #FF8552 */}
       <section
         id="games"
         className="snap-start h-screen flex flex-col justify-center items-center py-16 px-6"

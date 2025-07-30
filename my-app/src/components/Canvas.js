@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Stage, Layer, Circle, Image as KonvaImage } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 
-// Constante pentru unelte
+// unelte
 const TOOL_PENCIL = "pencil";
 const TOOL_BRUSH = "brush";
 const TOOL_PEN = "pen";
@@ -43,7 +43,7 @@ function floodFill(imageData, x, y, fillColor) {
 }
 
 export default function Canvas({ canvasSize = 460, onChange }) {
-  const { t } = useTranslation(); // Utilizează hook-ul useTranslation pentru a accesa funcția t
+  const { t } = useTranslation();
 
   const [currentCanvasDataUrl, setCurrentCanvasDataUrl] = useState("");
   const [history, setHistory] = useState([]);
@@ -272,7 +272,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
       {/* Sidebar cu controale */}
       <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 flex-shrink-0 pt-8">
         <div className="flex flex-wrap gap-2 mb-4">
-          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((tName) => ( // Redenumit t la tName pentru a evita conflictul cu functia t de la i18n
+          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((tName) => (
             <button
               key={tName}
               onClick={() => {
@@ -292,7 +292,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               }}
               className={`px-3 py-2 rounded border ${tool === tName ? "bg-blue-600 text-white" : "bg-white"}`}
             >
-              {t(tName)} {/* Folosește t() pentru a traduce numele uneltei */}
+              {t(tName)}
             </button>
           ))}
         </div>
@@ -363,9 +363,8 @@ export default function Canvas({ canvasSize = 460, onChange }) {
         </div>
       </aside>
 
-      {/* Zona de desen */}
+
       <section className="w-full md:w-2/3 p-4 flex flex-col items-center bg-white">
-        {/* Adaugă un spațiu vertical sub canvas */}
         <div style={{ marginTop: "48px" }}></div>
         <canvas
           ref={hiddenCanvasRef}
@@ -373,6 +372,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
           height={canvasSize}
           style={{ display: "none", width: `${canvasSize}px`, height: `${canvasSize}px`}}
         />
+        {/*Zona Desen*/}
         <Stage
           ref={stageRef}
           width={canvasSize}

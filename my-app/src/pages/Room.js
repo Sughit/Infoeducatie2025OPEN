@@ -15,11 +15,10 @@ const Room = () => {
   const [gameData, setGameData] = useState(null);
 
   useEffect(() => {
-    // Connect to Replit server and join room
+    // Connect
     socket.connect();
     socket.emit('join_room', { room: roomName, mode, nickname });
 
-    // Handle updates
     socket.on('update_players', (list) => {
       setPlayers(list);
     });
@@ -61,7 +60,7 @@ const Room = () => {
         </>
       )}
 
-      {/* Lista de jucători înainte de start */}
+      {/* Lista */}
       {!gameStarted && (
         <ul className="flex gap-4 mt-2 flex-wrap text-gray-800">
           {players.map((name, idx) => (
@@ -75,7 +74,7 @@ const Room = () => {
         </ul>
       )}
 
-      {/* UI joc după start */}
+      {/*după start */}
       {gameStarted && mode === 'caricature' && gameData?.traits && (
         <Caricature
           socket={socket}
