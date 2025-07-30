@@ -4,7 +4,7 @@ import Canvas from '../components/Canvas';
 const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
   // Definim state și ref-uri
   const [timeLeft, setTimeLeft] = useState(() =>
-    endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 60
+    endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 5
   );
   const [drawings, setDrawings] = useState({});
   // Pentru capturarea URI-ului desenului curent
@@ -57,48 +57,53 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
   // Receive caricature results
   useEffect(() => {
     const handler = payload => {
+      console.log(`[CLIENT][caricature_result] got payload:`, payload);
       setDrawings(prev => ({ ...prev, [payload.nickname]: payload.drawing }));
     };
+    console.log("[CLIENT] registering caricature_result handler");
     socket.on('caricature_result', handler);
     return () => socket.off('caricature_result', handler);
   }, [socket]);
 
-  // Emiterea desenului propriu la final de rundă
+    // Emiterea desenului propriu la final de rundă și export
   useEffect(() => {
     if (timeLeft === 0 && !emittedRef.current) {
-      const url = drawingUrl || canvasRef.current?.exportImage();
+      // exportă imaginea desenată
+      const url = canvasRef.current?.handleExport();
+      console.log(`[CLIENT][export] time's up, exporting image:`, url?.substring(0,50) + "…");
+      // actualizează drawingUrl pentru afișare imediată
+      if (url) setDrawingUrl(url);
+      // emite payload-ul cu desenul exportat
       socket.emit('caricature_result', { nickname: ownNickname, drawing: url });
+      console.log(`[CLIENT] emitted caricature_result for ${ownNickname}`);
       emittedRef.current = true;
     }
-  }, [timeLeft, drawingUrl, ownNickname, socket]);
+  }, [timeLeft, ownNickname, socket]);
 
+    // --- renderizarea componentei ---
   const roundOver = timeLeft <= 0;
+  const allDrawingsReceived = players.list.every(nick => drawings[nick]);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full">
       {/* Zona de desenat sau afișare caricatură proprie */}
-      <div
-        className="flex-1 flex items-center justify-center bg-gray-100"
-        ref={containerRef}
-      >
+      <div className="flex-1 flex items-center justify-center bg-gray-100">
         {!roundOver ? (
-          <Canvas
-            ref={canvasRef}
-            canvasSize={canvasSize}
-            onChange={setDrawingUrl}
-          />
+          <Canvas ref={canvasRef} canvasSize={canvasSize} onChange={setDrawingUrl} />
         ) : (
           <img
-            src={drawings[ownNickname]}
+            src={drawings[ownNickname] || drawingUrl}
             alt="Caricatura ta"
             className="w-full h-full rounded shadow border"
           />
         )}
       </div>
 
-      {/* Zona de caricaturi finale: două imagini */}
+      {/* Zona de caricaturi finale: așteaptă ca ambii să trimită */}
       <div className="flex-1 flex flex-col items-center justify-center bg-white p-6 mt-24">
-        {!roundOver ? (
+        {roundOver && !allDrawingsReceived ? (
+          <p className="text-xl font-medium">Aștept până toată lumea trimite caricatura...</p>
+        ) : (!roundOver ? (
           <>
             <h2 className="text-2xl font-bold mb-4">Trăsături ({timeLeft}s)</h2>
             <ul className="list-disc list-inside space-y-2 flex-1 mb-4 w-full">
@@ -122,10 +127,10 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
               </div>
             ))}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
-};
+}
 
 export default Caricature;
