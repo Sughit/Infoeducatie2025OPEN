@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line, Circle, Image as KonvaImage } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 
+// --- Config & helpers ---
 const steps = [
   {
     title: "Pasul 1: Forma feței",
@@ -32,6 +33,7 @@ function useImage(url) {
   return image;
 }
 
+// --- Geometrie pentru eraser ---
 function segmentIntersectsCircle(x1, y1, x2, y2, cx, cy, r) {
   const dx = x2 - x1;
   const dy = y2 - y1;
@@ -45,10 +47,42 @@ function segmentIntersectsCircle(x1, y1, x2, y2, cx, cy, r) {
   discriminant = Math.sqrt(discriminant);
   const t1 = (-b - discriminant) / (2 * a);
   const t2 = (-b + discriminant) / (2 * a);
-  return t1 >= 0 && t1 <= 1 || t2 >= 0 && t2 <= 1;
+  return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
 }
 
+// Înlocuiește funcția eraseAtPosition cu aceasta:
+
 function eraseAtPosition(linesArray, cx, cy, r) {
+  function pointInCircle(x, y, cx, cy, r) {
+    const dx = x - cx;
+    const dy = y - cy;
+    return dx * dx + dy * dy <= r * r;
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function segmentCircleIntersection(x1, y1, x2, y2, cx, cy, r) {
+    // Returnează t (0..1) pentru punctul de intersecție, sau null dacă nu există
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const fx = x1 - cx;
+    const fy = y1 - cy;
+    const a = dx * dx + dy * dy;
+    const b = 2 * (fx * dx + fy * dy);
+    const c = fx * fx + fy * fy - r * r;
+    let discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) return [];
+    discriminant = Math.sqrt(discriminant);
+    const t1 = (-b - discriminant) / (2 * a);
+    const t2 = (-b + discriminant) / (2 * a);
+    const ts = [];
+    if (t1 >= 0 && t1 <= 1) ts.push(t1);
+    if (t2 >= 0 && t2 <= 1) ts.push(t2);
+    return ts;
+  }
+
   const newLines = [];
   linesArray.forEach((line) => {
     const pts = line.points;
@@ -58,31 +92,59 @@ function eraseAtPosition(linesArray, cx, cy, r) {
       const y1 = pts[i + 1];
       const x2 = pts[i + 2];
       const y2 = pts[i + 3];
-      if (segmentIntersectsCircle(x1, y1, x2, y2, cx, cy, r)) {
-        if (currentSegment.length >= 6) {
-          newLines.push({ ...line, points: currentSegment });
-        }
-        currentSegment = [];
-      } else {
+      const p1In = pointInCircle(x1, y1, cx, cy, r);
+      const p2In = pointInCircle(x2, y2, cx, cy, r);
+      const intersections = segmentCircleIntersection(x1, y1, x2, y2, cx, cy, r);
+
+      if (!p1In && !p2In && intersections.length === 0) {
+        // Tot segmentul e în afara cercului, îl păstrăm
         if (currentSegment.length === 0) currentSegment.push(x1, y1);
         currentSegment.push(x2, y2);
+      } else if (!p1In && p2In && intersections.length > 0) {
+        // Intră în cerc: păstrăm până la intersecție
+        const t = Math.min(...intersections);
+        const ix = lerp(x1, x2, t);
+        const iy = lerp(y1, y2, t);
+        if (currentSegment.length === 0) currentSegment.push(x1, y1);
+        currentSegment.push(ix, iy);
+        newLines.push({ ...line, points: [...currentSegment] });
+        currentSegment = [];
+      } else if (p1In && !p2In && intersections.length > 0) {
+        // Iese din cerc: începem un nou segment de la intersecție
+        const t = Math.max(...intersections);
+        const ix = lerp(x1, x2, t);
+        const iy = lerp(y1, y2, t);
+        currentSegment = [ix, iy, x2, y2];
+      } else if (!p1In && !p2In && intersections.length === 2) {
+        // Segmentul traversează complet cercul: două intersecții, păstrăm două bucăți
+        const tA = Math.min(...intersections);
+        const tB = Math.max(...intersections);
+        const ixA = lerp(x1, x2, tA);
+        const iyA = lerp(y1, y2, tA);
+        const ixB = lerp(x1, x2, tB);
+        const iyB = lerp(y1, y2, tB);
+        // Prima bucată
+        if (currentSegment.length === 0) currentSegment.push(x1, y1);
+        currentSegment.push(ixA, iyA);
+        newLines.push({ ...line, points: [...currentSegment] });
+        // A doua bucată
+        currentSegment = [ixB, iyB, x2, y2];
+      } else {
+        // Ambele puncte în cerc sau segment complet în cerc: nu păstrăm nimic
+        if (currentSegment.length >= 4) {
+          newLines.push({ ...line, points: [...currentSegment] });
+        }
+        currentSegment = [];
       }
     }
-    if (currentSegment.length >= 6) {
-      let dist = 0;
-      for (let i = 0; i < currentSegment.length - 2; i += 2) {
-        const dx = currentSegment[i + 2] - currentSegment[i];
-        const dy = currentSegment[i + 3] - currentSegment[i + 1];
-        dist += Math.sqrt(dx * dx + dy * dy);
-      }
-      if (dist > 2) {
-        newLines.push({ ...line, points: currentSegment });
-      }
+    if (currentSegment.length >= 4) {
+      newLines.push({ ...line, points: [...currentSegment] });
     }
   });
   return newLines;
 }
 
+// --- Componenta principală ---
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
@@ -151,6 +213,7 @@ export default function Home() {
     if (!isDrawing.current) return;
 
     if (tool === TOOL_ERASER) {
+      // Folosește exact același radius ca la cursor
       updateLines(eraseAtPosition(lines, pos.x, pos.y, strokeWidth / 2));
     } else if (tool === TOOL_PEN) {
       const newLines = [...lines];
@@ -309,6 +372,7 @@ export default function Home() {
             placeholder="#000000"
             maxLength={7}
           />
+          <div className="mt-1 text-center font-medium text-gray-700">{color}</div>
         </div>
 
         <Stage
@@ -345,16 +409,17 @@ export default function Home() {
               )
             )}
             {cursorPos && (
-  <Circle
-    x={cursorPos.x}
-    y={cursorPos.y}
-    radius={strokeWidth / 2}
-    stroke={tool === TOOL_ERASER? "#999" : "#333"}
-    strokeWidth={3}
-    fillEnabled={false}
-    listening={false}
-  />
-)}
+              <Circle
+                x={cursorPos.x}
+                y={cursorPos.y}
+                radius={strokeWidth / 2}
+                stroke={tool === TOOL_ERASER ? "#999" : "#333"}
+                strokeWidth={1}
+                fillEnabled={false}
+                dash={[]} // fără linie punctată
+                listening={false}
+              />
+            )}
           </Layer>
         </Stage>
 
@@ -383,7 +448,7 @@ export default function Home() {
             />
             Canvas transparent ghidat
           </label>
-        </div>  
+        </div>
       </div>
 
       <div className="bg-white p-6 rounded shadow flex flex-col items-center justify-center">
@@ -400,4 +465,4 @@ export default function Home() {
       </div>
     </main>
   );
-}
+} 
