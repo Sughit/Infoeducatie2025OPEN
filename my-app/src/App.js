@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import Lessons from './pages/Lessons';
 import Games from './pages/Games';
 
-import Eye from './pages/Eyes';
+import Eye from './pages/Eye';
 import Face from './pages/Face';
 import Silhouette from './pages/Silhouette';
 import Whole from './pages/Whole';

@@ -273,21 +273,6 @@ export default function Canvas({ canvasSize = 460 }) {
             </button>
           ))}
         </div>
-        <div className="flex gap-2 mb-4">
-          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white" disabled={history.length === 0}>Undo</button>
-          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white" disabled={redoStack.length === 0}>Redo</button>
-          <button
-            onClick={() => {
-              setCurrentCanvasDataUrl("");
-              setHistory([]);
-              setRedoStack([]);
-              konvaDrawingImageRef.current = new window.Image();
-            }}
-            className="flex-1 py-2 rounded bg-red-600 text-white"
-          >
-            Reset
-          </button>
-        </div>
         <div className="mb-4">
           <label className="block mb-1 text-black">Diametru ({strokeWidth}px)</label>
           <input type="range" min={1} max={30} value={strokeWidth} onChange={e => setStrokeWidth(Number(e.target.value))} className="w-full" />
@@ -303,7 +288,9 @@ export default function Canvas({ canvasSize = 460 }) {
       </aside>
 
       {/* Zona de desen */}
-      <section className="w-full md:w-2/3 p-4 flex justify-center items-center bg-white">
+      <section className="w-full md:w-2/3 p-4 flex flex-col items-center bg-white">
+        {/* Adaugă un spațiu vertical sub canvas */}
+        <div style={{ marginTop: "48px" }}></div>
         <canvas
           ref={hiddenCanvasRef}
           width={canvasSize}
@@ -343,6 +330,22 @@ export default function Canvas({ canvasSize = 460 }) {
             )}
           </Layer>
         </Stage>
+        {/* Mută butoanele sub canvas */}
+        <div className="flex gap-2 mt-4 mb-4 w-full max-w-md">
+          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white" disabled={history.length === 0}>Undo</button>
+          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white" disabled={redoStack.length === 0}>Redo</button>
+          <button
+            onClick={() => {
+              setCurrentCanvasDataUrl("");
+              setHistory([]);
+              setRedoStack([]);
+              konvaDrawingImageRef.current = new window.Image();
+            }}
+            className="flex-1 py-2 rounded bg-red-600 text-white"
+          >
+            Reset
+          </button>
+        </div>
       </section>
     </main>
   );

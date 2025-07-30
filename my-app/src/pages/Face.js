@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Canvas from "../components/Canvas";
 
 const Face = () => {
   const [images, setImages] = useState([]);
   const [index, setIndex] = useState(0);
+  const [imageWidth, setImageWidth] = useState(384); // default
+  const imageRef = useRef(null);
 
   const baseURL = `${process.env.REACT_APP_SOCKET_URL}/sketches/face`;
 
@@ -13,6 +16,17 @@ const Face = () => {
       .then((data) => setImages(data))
       .catch((err) => console.error("Eroare la încărcare imagini:", err));
   }, []);
+
+  useEffect(() => {
+    function updateSize() {
+      if (imageRef.current) {
+        setImageWidth(imageRef.current.offsetWidth);
+      }
+    }
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, [index, images]);
 
   const nextImage = () => {
     setIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
@@ -30,12 +44,7 @@ const Face = () => {
     <div className="flex flex-col md:flex-row h-screen">
       {/* Canvas în stânga */}
       <div className="md:w-1/2 w-full flex items-center justify-center bg-gray-100 border-r border-gray-200">
-        <canvas
-          id="face-canvas"
-          width={500}
-          height={500}
-          className="bg-white shadow-lg rounded border border-gray-300"
-        />
+        <Canvas canvasSize={imageWidth} />
       </div>
 
       {/* Carusel în dreapta */}
@@ -48,13 +57,17 @@ const Face = () => {
           {currentImage && (
             <motion.img
               key={currentImage}
+              ref={imageRef}
               src={currentImage}
               alt={`face ${index + 1}`}
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.18, ease: "easeOut" }} 
+              transition={{ duration: 0.18, ease: "easeOut" }}
               className="w-full max-w-md h-auto rounded shadow border border-gray-200 mb-4"
+              onLoad={() => {
+                if (imageRef.current) setImageWidth(imageRef.current.offsetWidth);
+              }}
             />
           )}
         </AnimatePresence>
