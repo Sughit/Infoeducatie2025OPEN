@@ -23,7 +23,7 @@ const Lectii = () => {
     },
     {
       titleKey: 'bust',
-      slug: 'bust', // Changed slug to 'bust' for consistency
+      slug: 'whole', 
       descriptionKey: 'bust_desc',
     },
   ];
