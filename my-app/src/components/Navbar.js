@@ -12,28 +12,65 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-[#E6E6E6] shadow-md fixed top-0 left-0 right-0 z-50">
       <div className="p-4 max-w-6xl mx-auto flex justify-between items-center">
-        <div className="text-2xl font-bold text-gray-800">
-          <Link to="/" className="hover:text-blue-600 transition">ArtPortrait</Link>
+        <div className="text-2xl font-bold text-[#297373] transition-colors duration-200">
+          <Link to="/" className="hover:text-[#FF8552] transition duration-200">ArtPortrait</Link>
         </div>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6">
-          <Link to="/lessons" className="text-gray-700 hover:text-blue-600 font-medium transition">{t("lessons")}</Link>
-          <Link to="/games" className="text-gray-700 hover:text-blue-600 font-medium transition">{t("games")}</Link>
-          <Link to="/admin" className="text-gray-700 hover:text-blue-600 font-medium transition">{t("Admin")}</Link>
+          <Link
+            to="/lessons"
+            className="font-semibold transition px-4 py-2 rounded-full text-white transform hover:scale-105 active:scale-95 duration-200"
+            style={{
+              backgroundColor: '#FF8552',
+              boxShadow: '0 0 0 3px rgba(255, 133, 82, 0.5)',
+            }}
+          >
+            {t("lessons")}
+          </Link>
+
+          <Link
+            to="/games"
+            className="font-semibold transition px-4 py-2 rounded-xl text-[#297373] transform hover:scale-105 active:scale-95 duration-200"
+            style={{
+              border: '2px solid #297373',
+            }}
+          >
+            {t("games")}
+          </Link>
+
+          <Link
+            to="/admin"
+            className="font-medium text-[#297373] hover:text-[#FF8552] transition duration-200 transform hover:scale-105 active:scale-95"
+          >
+            {t("Admin")}
+          </Link>
 
           {/* Language switcher */}
           <div className="space-x-2 ml-4">
-            <button onClick={() => changeLanguage('ro')} className="text-sm font-medium hover:underline">RO</button>
-            <button onClick={() => changeLanguage('en')} className="text-sm font-medium hover:underline">EN</button>
+            <button
+              onClick={() => changeLanguage('ro')}
+              className="text-sm font-semibold text-[#297373] hover:underline transition transform hover:scale-105 active:scale-95 duration-200"
+            >
+              🇷🇴 RO
+            </button>
+            <button
+              onClick={() => changeLanguage('en')}
+              className="text-sm font-semibold text-[#297373] hover:underline transition transform hover:scale-105 active:scale-95 duration-200"
+            >
+              🇬🇧 EN
+            </button>
           </div>
         </div>
 
         {/* Mobile toggle */}
         <div className="md:hidden">
-          <button onClick={() => setOpen(!open)} className="text-gray-700 hover:text-blue-600">
+          <button
+            onClick={() => setOpen(!open)}
+            className="text-[#297373] hover:text-[#FF8552] transition-transform transform hover:scale-105 active:scale-95 duration-200"
+          >
             {open ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
@@ -41,25 +78,45 @@ const Navbar = () => {
 
       {/* Mobile Dropdown */}
       {open && (
-        <div className="md:hidden px-4 pb-4 space-y-2 bg-white shadow-inner">
+        <div className="md:hidden px-4 pb-4 space-y-3 bg-[#E6E6E6] shadow-inner">
           <Link
             to="/lessons"
             onClick={() => setOpen(false)}
-            className="block text-gray-700 hover:text-blue-600 font-medium"
+            className="block font-semibold px-4 py-2 rounded-full text-white transition transform hover:scale-105 active:scale-95 duration-200"
+            style={{
+              backgroundColor: '#FF8552',
+              boxShadow: '0 0 0 3px rgba(255, 133, 82, 0.5)',
+            }}
           >
             {t("lessons")}
           </Link>
+
           <Link
             to="/games"
             onClick={() => setOpen(false)}
-            className="block text-gray-700 hover:text-blue-600 font-medium"
+            className="block font-semibold px-4 py-2 rounded-xl text-[#297373] transition transform hover:scale-105 active:scale-95 duration-200"
+            style={{
+              backgroundColor: '#E9D758',
+              border: '2px solid #297373',
+            }}
           >
             {t("games")}
           </Link>
+
           {/* Language switcher for mobile */}
           <div className="pt-2 flex gap-2">
-            <button onClick={() => { changeLanguage('ro'); setOpen(false); }} className="text-sm font-medium hover:underline">RO</button>
-            <button onClick={() => { changeLanguage('en'); setOpen(false); }} className="text-sm font-medium hover:underline">EN</button>
+            <button
+              onClick={() => { changeLanguage('ro'); setOpen(false); }}
+              className="text-sm font-semibold text-[#297373] hover:underline transition transform hover:scale-105 active:scale-95 duration-200"
+            >
+              🇷🇴 RO
+            </button>
+            <button
+              onClick={() => { changeLanguage('en'); setOpen(false); }}
+              className="text-sm font-semibold text-[#297373] hover:underline transition transform hover:scale-105 active:scale-95 duration-200"
+            >
+              🇬🇧 EN
+            </button>
           </div>
         </div>
       )}

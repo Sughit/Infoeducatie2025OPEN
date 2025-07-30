@@ -42,5 +42,15 @@
   "caricature_game_desc": "Creează personaje amuzante din trăsături aleatorii.",
   "caricature_bullet1": "Primești trăsături ca „ochi mari”, „nas lung”",
   "caricature_bullet2": "Desenează creativ",
-  "start_game": "Începe un joc"
+  "start_game": "Începe un joc",
+  "pencil": "Creion",
+  "brush": "Pensulă",
+  "pen": "Stilou",
+  "eraser": "Radieră",
+  "bucket": "Găleată",
+  "diameter": "Diametru",
+  "opacity": "Opacitate",
+  "undo": "Anulează",
+  "redo": "Refă",
+  "reset": "Resetează"
 }

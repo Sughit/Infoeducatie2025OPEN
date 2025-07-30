@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Stage, Layer, Circle, Image as KonvaImage } from "react-konva";
 import { HexColorPicker } from "react-colorful";
@@ -8,6 +9,7 @@ const TOOL_BRUSH = "brush";
 const TOOL_PEN = "pen";
 const TOOL_ERASER = "eraser";
 const TOOL_BUCKET = "bucket";
+
 
 function hexToRgba(hex, alpha = 1) {
   let c = hex.replace("#", "");
@@ -41,6 +43,8 @@ function floodFill(imageData, x, y, fillColor) {
 }
 
 export default function Canvas({ canvasSize = 460 }) {
+  const { t } = useTranslation(); // Utilizează hook-ul useTranslation pentru a accesa funcția t
+
   const [currentCanvasDataUrl, setCurrentCanvasDataUrl] = useState("");
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -258,29 +262,93 @@ export default function Canvas({ canvasSize = 460 }) {
   return (
     <main className="flex flex-col md:flex-row h-full pt-16">
       {/* Sidebar cu controale */}
-      <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 border-r border-gray-200 flex-shrink-0">
+      <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 flex-shrink-0 pt-8">
         <div className="flex flex-wrap gap-2 mb-4">
-          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((t) => (
+          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((tName) => ( // Redenumit t la tName pentru a evita conflictul cu functia t de la i18n
             <button
-              key={t}
+              key={tName}
               onClick={() => {
-                setTool(t);
+                setTool(tName);
                 isDrawing.current = false;
+                
               }}
-              className={`px-3 py-2 rounded border ${tool === t ? "bg-blue-600 text-white" : "bg-white"}`}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "6px",
+                border: tool === tName ? "2px solid #297373" : "2px solid #297373",
+                backgroundColor: tool === tName ? "#FF8552" : "#FFFFFF",
+                color: tool === tName ? "#FFFFFF" : "#297373",
+                fontWeight: tool === tName ? "700" : "500",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              className={`px-3 py-2 rounded border ${tool === tName ? "bg-blue-600 text-white" : "bg-white"}`}
             >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {t(tName)} {/* Folosește t() pentru a traduce numele uneltei */}
             </button>
           ))}
         </div>
         <div className="mb-4">
-          <label className="block mb-1 text-black">Diametru ({strokeWidth}px)</label>
-          <input type="range" min={1} max={30} value={strokeWidth} onChange={e => setStrokeWidth(Number(e.target.value))} className="w-full" />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 text-black">Opacitate ({Math.round(opacity * 100)}%)</label>
-          <input type="range" min={0.1} max={1} step={0.05} value={opacity} onChange={e => setOpacity(Number(e.target.value))} className="w-full" />
-        </div>
+  <label className="block mb-1 text-black">
+    {t("diameter")} ({strokeWidth}px)
+  </label>
+  <input
+    type="range"
+    min={1}
+    max={30}
+    value={strokeWidth}
+    onChange={e => setStrokeWidth(Number(e.target.value))}
+    className="w-full custom-range"
+  />
+</div>
+
+<div className="mb-4">
+  <label className="block mb-1 text-black">
+    {t("opacity")} ({Math.round(opacity * 100)}%)
+  </label>
+  <input
+    type="range"
+    min={0.1}
+    max={1}
+    step={0.05}
+    value={opacity}
+    onChange={e => setOpacity(Number(e.target.value))}
+    className="w-full custom-range"
+  />
+</div>
+
+<style>{`
+  .custom-range::-webkit-slider-runnable-track {
+    background: #297373;
+    height: 6px;
+    border-radius: 4px;
+  }
+  .custom-range::-moz-range-track {
+    background: #297373;
+    height: 6px;
+    border-radius: 4px;
+  }
+  .custom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #FF8552;
+    cursor: pointer;
+    margin-top: -6px;
+    border: none;
+  }
+  .custom-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #FF8552;
+    cursor: pointer;
+    border: none;
+  }
+`}</style>
+
         <div className="mb-4">
           <HexColorPicker color={color} onChange={setColor} />
           <input type="text" value={manualColorInput} onChange={handleManualColorChange} className="mt-2 w-full border rounded px-2 py-1 text-center font-mono" placeholder="#000000" maxLength={7} />
@@ -295,7 +363,7 @@ export default function Canvas({ canvasSize = 460 }) {
           ref={hiddenCanvasRef}
           width={canvasSize}
           height={canvasSize}
-          style={{ display: "none", width: `${canvasSize}px`, height: `${canvasSize}px` }}
+          style={{ display: "none", width: `${canvasSize}px`, height: `${canvasSize}px`}}
         />
         <Stage
           ref={stageRef}
@@ -330,10 +398,35 @@ export default function Canvas({ canvasSize = 460 }) {
             )}
           </Layer>
         </Stage>
-        {/* Mută butoanele sub canvas */}
         <div className="flex gap-2 mt-4 mb-4 w-full max-w-md">
-          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white" disabled={history.length === 0}>Undo</button>
-          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white" disabled={redoStack.length === 0}>Redo</button>
+          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white"
+           disabled={history.length === 0}
+           style={{
+              flex: 1,
+              padding: "10px",
+              borderRadius: "6px",
+              border: "2px solid #297373",
+              backgroundColor: history.length === 0 ? "#ccc" : "#FF8552",
+              color: "#fff",
+              cursor: history.length === 0 ? "not-allowed" : "pointer",
+              fontWeight: "700",
+              transition: "background-color 0.3s",
+            }}>
+            {t("undo")}</button> {/* Tradus "Undo" */}
+          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white"
+          disabled={redoStack.length === 0}
+          style={{
+              flex: 1,
+              padding: "10px",
+              borderRadius: "6px",
+              border: "2px solid #297373",
+              backgroundColor: redoStack.length === 0 ? "#ccc" : "#FF8552",
+              color: "#fff",
+              cursor: redoStack.length === 0 ? "not-allowed" : "pointer",
+              fontWeight: "700",
+              transition: "background-color 0.3s",
+            }}
+          >{t("redo")}</button> {/* Tradus "Redo" */}
           <button
             onClick={() => {
               setCurrentCanvasDataUrl("");
@@ -342,8 +435,19 @@ export default function Canvas({ canvasSize = 460 }) {
               konvaDrawingImageRef.current = new window.Image();
             }}
             className="flex-1 py-2 rounded bg-red-600 text-white"
-          >
-            Reset
+            style={{
+              flex: 1,
+              padding: "10px",
+              borderRadius: "6px",
+              border: "2px solid #297373",  
+              backgroundColor: "#c92020ff",
+              color: "#fff",
+              fontWeight: "700",
+              transition: "background-color 0.3s",
+            }}
+            >
+            {t("reset")} {/* Tradus "Reset" */}
+            
           </button>
         </div>
       </section>

@@ -15,7 +15,7 @@ import Room from './pages/Room';
 import JoinRoom from './pages/JoinRoom';
 
 import Canvas from './components/CanvasTest';
-import AdminLogin from './pages/admin';
+import Admin from './pages/admin';
 
 function App() {
   return (
@@ -36,7 +36,7 @@ function App() {
           <Route path="/join" element={<JoinRoom />} />
           
           <Route path='/Canvas' element={<Canvas/>} />
-          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </div>
     </Router>
