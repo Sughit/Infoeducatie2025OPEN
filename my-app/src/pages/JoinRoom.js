@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // Importăm useTranslation
-
+import { useTranslation } from 'react-i18next'; 
 const JoinRoom = () => {
   const [roomName, setRoomName] = useState('');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation(); // Inițializăm hook-ul de traducere
+  const { t } = useTranslation(); 
 
   const mode = searchParams.get("mode"); 
   const [nickname, setNickname] = useState('');

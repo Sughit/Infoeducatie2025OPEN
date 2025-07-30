@@ -258,7 +258,7 @@ export default function Canvas({ canvasSize = 460 }) {
   return (
     <main className="flex flex-col md:flex-row h-full pt-16">
       {/* Sidebar cu controale */}
-      <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 border-r border-gray-200 flex-shrink-0">
+      <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 flex-shrink-0 pt-8">
         <div className="flex flex-wrap gap-2 mb-4">
           {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((t) => (
             <button
@@ -330,7 +330,6 @@ export default function Canvas({ canvasSize = 460 }) {
             )}
           </Layer>
         </Stage>
-        {/* Mută butoanele sub canvas */}
         <div className="flex gap-2 mt-4 mb-4 w-full max-w-md">
           <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white" disabled={history.length === 0}>Undo</button>
           <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white" disabled={redoStack.length === 0}>Redo</button>

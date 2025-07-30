@@ -1,89 +1,51 @@
-// src/components/Signup.js
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { auth, db } from './firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
-export default function admin() {
+export default function AdminAuth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null);
-    if (password !== confirmPassword) {
-      setError('Parolele nu coincid');
-      return;
-    }
+    setError('');
     try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = userCred.user.uid;
-
-      // Initialize an empty results document for this user
-      await setDoc(doc(db, "results", uid), {
-        createdAt: serverTimestamp(),
-      });
-
-      navigate('/');
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      // După autentificare, redirecționează către pagina de Admin
+      navigate('/admin');
     } catch (err) {
-      setError(err.message);
+      setError('Email sau parolă incorectă. Încercați din nou.');
     }
   };
 
   return (
-    <div className="flex items-center justify-center p-4 min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-semibold mb-4 text-center">Înregistrare</h1>
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block">
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="mt-1 w-full p-2 border rounded"
-              required
-            />
-          </label>
-          <label className="block">
-            Parolă
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="mt-1 w-full p-2 border rounded"
-              required
-            />
-          </label>
-          <label className="block">
-            Confirmă parola
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="mt-1 w-full p-2 border rounded"
-              required
-            />
-          </label>
-          <button
-            type="submit"
-            className="w-full bg-blue text-white py-2 rounded hover:bg-light-blue transition"
-          >
-            Înregistrare
-          </button>
-        </form>
-        <p className="mt-4 text-center">
-          Ai deja cont?{' '}
-          <Link to="/login" className="text-blue hover:underline">
-            Conectează-te
-          </Link>
-        </p>
-      </div>
+    <div style={{ maxWidth: '400px', margin: 'auto' }}>
+      <h2>Autentificare Admin</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <form onSubmit={handleLogin}>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Parolă:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Conectează-te</button>
+      </form>
     </div>
   );
 }
