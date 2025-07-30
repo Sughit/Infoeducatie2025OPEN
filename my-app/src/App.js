@@ -15,7 +15,7 @@ import Room from './pages/Room';
 import JoinRoom from './pages/JoinRoom';
 
 import Canvas from './components/CanvasTest';
-import Admin from './pages/Admin';
+import Admin from './pages/admin';
 
 function App() {
   return (
