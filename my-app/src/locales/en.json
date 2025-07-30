@@ -42,5 +42,15 @@
   "caricature_game_desc": "Create funny characters from random features.",
   "caricature_bullet1": "Receive traits like “big eyes”, “long nose”",
   "caricature_bullet2": "Draw creatively",
-  "start_game": "Start a Game"
+  "start_game": "Start a Game",
+  "pencil": "Pencil",
+  "brush": "Brush",
+  "pen": "Pen",
+  "eraser": "Eraser",
+  "bucket": "Bucket",
+  "diameter": "Diameter",
+  "opacity": "Opacity",
+  "undo": "Undo",
+  "redo": "Redo",
+  "reset": "Reset"
 }
