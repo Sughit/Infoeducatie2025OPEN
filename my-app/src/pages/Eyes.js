@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Eye = () => {
   const [images, setImages] = useState([]);
@@ -43,13 +44,20 @@ const Eye = () => {
           Exemplu {index + 1}/{images.length}
         </h2>
 
-        {currentImage && (
-          <img
-            src={currentImage}
-            alt={`eye ${index + 1}`}
-            className="w-full max-w-md h-auto rounded shadow border border-gray-200 mb-4"
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {currentImage && (
+            <motion.img
+              key={currentImage}
+              src={currentImage}
+              alt={`eye ${index + 1}`}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: "easeOut" }} 
+              className="w-full max-w-md h-auto rounded shadow border border-gray-200 mb-4"
+            />
+          )}
+        </AnimatePresence>
 
         <div className="flex gap-4">
           <button

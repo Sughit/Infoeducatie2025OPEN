@@ -29,10 +29,10 @@ const Games = () => {
           <div
             key={index}
             onClick={() => handleSelectGame(game.mode)}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl hover:bg-blue-50 cursor-pointer transition"
+            className="group bg-white rounded-2xl shadow-md p-8 hover:shadow-xl hover:bg-blue-50 cursor-pointer transition-transform transform hover:scale-105"
           >
-            <h2 className="text-xl font-semibold text-gray-800">{game.title}</h2>
-            <p className="text-gray-600 mt-2">{game.description}</p>
+            <h2 className="text-2xl font-bold text-blue-800 group-hover:text-blue-900">{game.title}</h2>
+            <p className="text-gray-600 mt-3 text-base">{game.description}</p>
           </div>
         ))}
       </div>
