@@ -42,7 +42,7 @@ const Navbar = () => {
           </Link>
 
           <Link
-            to="/admin"
+            to="/adminAuth"
             className="font-medium text-[#297373] hover:text-[#FF8552] transition duration-200 transform hover:scale-105 active:scale-95"
           >
             {t("Admin")}
@@ -103,7 +103,18 @@ const Navbar = () => {
             {t("games")}
           </Link>
 
-          {/* Language switcher for mobile */}
+          <Link
+            to="/adminAuth"
+            onClick={() => setOpen(false)}
+            className="block font-semibold px-4 py-2 rounded-xl text-[#297373] transition transform hover:scale-105 active:scale-95 duration-200"
+            style={{
+              backgroundColor: '#E9D758',
+              border: '2px solid #297373',
+            }}
+          >
+            {t("Admin")}
+          </Link>
+
           <div className="pt-2 flex gap-2">
             <button
               onClick={() => { changeLanguage('ro'); setOpen(false); }}
