@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../components/Canvas';
 
 const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
-  // Initialize synced timeLeft based on endTime or fallback to 60s
+  // Definim state și ref-uri
   const [timeLeft, setTimeLeft] = useState(() =>
     endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 60
   );
   const [drawings, setDrawings] = useState({});
+  // Pentru capturarea URI-ului desenului curent
+  const [drawingUrl, setDrawingUrl] = useState(null);
+  const canvasRef = useRef();
   const emittedRef = useRef(false);
   const containerRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState(384);
@@ -23,7 +26,6 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
   // Synced countdown using requestAnimationFrame for endTime
   useEffect(() => {
     if (!endTime) return;
-    // Initialize immediately
     setTimeLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
     let animationFrame;
     const updateTimer = () => {
@@ -41,7 +43,7 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
   useEffect(() => {
     if (endTime) return;
     const localTimer = setInterval(() => {
-      setTimeLeft((prev) => {
+      setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(localTimer);
           return 0;
@@ -54,14 +56,21 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
 
   // Receive caricature results
   useEffect(() => {
-    const handler = (payload) => {
-      setDrawings((prev) => ({ ...prev, [payload.nickname]: payload.drawing }));
+    const handler = payload => {
+      setDrawings(prev => ({ ...prev, [payload.nickname]: payload.drawing }));
     };
     socket.on('caricature_result', handler);
-    return () => {
-      socket.off('caricature_result', handler);
-    };
+    return () => socket.off('caricature_result', handler);
   }, [socket]);
+
+  // Emiterea desenului propriu la final de rundă
+  useEffect(() => {
+    if (timeLeft === 0 && !emittedRef.current) {
+      const url = drawingUrl || canvasRef.current?.exportImage();
+      socket.emit('caricature_result', { nickname: ownNickname, drawing: url });
+      emittedRef.current = true;
+    }
+  }, [timeLeft, drawingUrl, ownNickname, socket]);
 
   const roundOver = timeLeft <= 0;
 
@@ -73,10 +82,10 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
         ref={containerRef}
       >
         {!roundOver ? (
-          <Canvas 
+          <Canvas
             ref={canvasRef}
             canvasSize={canvasSize}
-            onChange={setDrawingUrl} 
+            onChange={setDrawingUrl}
           />
         ) : (
           <img
@@ -102,7 +111,7 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
           </>
         ) : (
           <div className="grid grid-cols-2 gap-4 w-full h-full">
-            {players.list.map((nick) => (
+            {players.list.map(nick => (
               <div key={nick} className="flex flex-col items-center">
                 <img
                   src={drawings[nick]}

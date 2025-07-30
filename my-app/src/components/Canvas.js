@@ -42,7 +42,7 @@ function floodFill(imageData, x, y, fillColor) {
   }
 }
 
-export default function Canvas({ canvasSize = 460 }) {
+export default function Canvas({ canvasSize = 460, onChange }) {
   const { t } = useTranslation(); // Utilizează hook-ul useTranslation pentru a accesa funcția t
 
   const [currentCanvasDataUrl, setCurrentCanvasDataUrl] = useState("");
@@ -63,12 +63,12 @@ export default function Canvas({ canvasSize = 460 }) {
   const konvaDrawingImageRef = useRef(new window.Image());
   const MAX_UNDO_STEPS = 30;
 
-  const handleExport = useCallback(() => {
+  const handleExport = () => {
     const uri = stageRef.current.toDataURL();
     console.log(uri);
-    setExportUri(uri);
     if (onChange) onChange(uri);
-  }, [onChange]);
+    setExportUri(uri);
+  };
 
   const updateCanvasImage = useCallback((newImageDataUrl) => {
     setHistory((prev) => {
