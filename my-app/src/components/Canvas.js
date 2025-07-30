@@ -256,7 +256,7 @@ export default function Canvas({ canvasSize = 460 }) {
   }, [handleUndo, handleRedo]);
 
   return (
-    <main className="flex flex-col md:flex-row h-full">
+    <main className="flex flex-col md:flex-row h-full pt-16">
       {/* Sidebar cu controale */}
       <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 border-r border-gray-200 flex-shrink-0">
         <div className="flex flex-wrap gap-2 mb-4">
@@ -274,8 +274,8 @@ export default function Canvas({ canvasSize = 460 }) {
           ))}
         </div>
         <div className="flex gap-2 mb-4">
-          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow-500 text-white" disabled={history.length === 0}>Undo</button>
-          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green-600 text-white" disabled={redoStack.length === 0}>Redo</button>
+          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white" disabled={history.length === 0}>Undo</button>
+          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white" disabled={redoStack.length === 0}>Redo</button>
           <button
             onClick={() => {
               setCurrentCanvasDataUrl("");
