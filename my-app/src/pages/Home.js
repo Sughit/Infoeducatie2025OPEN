@@ -383,7 +383,7 @@ export default function Home() {
             />
             Canvas transparent ghidat
           </label>
-        </div>
+        </div>  
       </div>
 
       <div className="bg-white p-6 rounded shadow flex flex-col items-center justify-center">
