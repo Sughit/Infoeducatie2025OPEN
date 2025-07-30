@@ -12,13 +12,13 @@ const Navbar = () => {
       {/* Butoane */}
       <div className="space-x-4">
         <Link
-          to="/lectii"
+          to="/lessons"
           className="text-gray-700 hover:text-blue-600 font-medium transition"
         >
           Lecții
         </Link>
         <Link
-          to="/jocuri"
+          to="/games"
           className="text-gray-700 hover:text-blue-600 font-medium transition"
         >
           Jocuri

@@ -6,6 +6,14 @@ import Home from './pages/Home';
 import Lessons from './pages/Lessons';
 import Games from './pages/Games';
 
+import Eye from './pages/Eyes';
+import Face from './pages/Face';
+import Silhouette from './pages/Silhouette';
+import Whole from './pages/Whole';
+
+import Room from './pages/Room';
+import JoinRoom from './pages/JoinRoom';
+
 function App() {
   return (
     <Router>
@@ -15,6 +23,14 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/lessons" element={<Lessons />} />
           <Route path="/games" element={<Games />} />
+
+          <Route path="/lessons/eye" element={<Eye />} />
+          <Route path="/lessons/face" element={<Face />} />
+          <Route path="/lessons/silhouette" element={<Silhouette />} />
+          <Route path="/lessons/whole" element={<Whole />} />
+
+          <Route path="/room/:roomName" element={<Room />} />
+          <Route path="/join" element={<JoinRoom />} />
         </Routes>
       </div>
     </Router>
