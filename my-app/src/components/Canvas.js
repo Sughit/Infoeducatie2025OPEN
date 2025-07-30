@@ -63,7 +63,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
   const konvaDrawingImageRef = useRef(new window.Image());
   const MAX_UNDO_STEPS = 30;
 
-  const handleExport = () => {
+  const exportImage = () => {
     const uri = stageRef.current.toDataURL();
     console.log(uri);
     if (onChange) onChange(uri);

@@ -83,7 +83,7 @@ export default function Home() {
               { titleKey: "lesson_eye_title", descKey: "lesson_eye_desc" },
               { titleKey: "lesson_face_title", descKey: "lesson_face_desc" },
               { titleKey: "lesson_silhouette_title", descKey: "lesson_silhouette_desc" },
-              { titleKey: "lesson_whole_title", descKey: "lesson_whole_desc" },
+              { titleKey: "lesson_bust_title", descKey: "lesson_bust_desc" },
             ].map(({ titleKey, descKey }) => (
               <div
                 key={titleKey}
