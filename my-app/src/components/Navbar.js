@@ -1,21 +1,28 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   return (
     <nav className="bg-white shadow-md p-4 flex justify-between items-center">
       {/* Nume aplicație */}
       <div className="text-2xl font-bold text-gray-800">
-        ArtPortrait
+        <Link to="/" className="hover:text-blue-600 transition">ArtPortrait</Link>
       </div>
 
       {/* Butoane */}
       <div className="space-x-4">
-        <button className="text-gray-700 hover:text-blue-600 font-medium">
+        <Link
+          to="/lectii"
+          className="text-gray-700 hover:text-blue-600 font-medium transition"
+        >
           Lecții
-        </button>
-        <button className="text-gray-700 hover:text-blue-600 font-medium">
+        </Link>
+        <Link
+          to="/jocuri"
+          className="text-gray-700 hover:text-blue-600 font-medium transition"
+        >
           Jocuri
-        </button>
+        </Link>
       </div>
     </nav>
   );
