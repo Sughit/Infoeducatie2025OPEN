@@ -51,6 +51,6 @@ const JoinRoom = () => {
       </form>
     </div>
   );
-};
+}; 
 
 export default JoinRoom;
