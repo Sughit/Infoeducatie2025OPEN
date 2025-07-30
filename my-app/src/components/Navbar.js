@@ -22,6 +22,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-6">
           <Link to="/lessons" className="text-gray-700 hover:text-blue-600 font-medium transition">{t("lessons")}</Link>
           <Link to="/games" className="text-gray-700 hover:text-blue-600 font-medium transition">{t("games")}</Link>
+          <Link to="/admin" className="text-gray-700 hover:text-blue-600 font-medium transition">{t("Admin")}</Link>
 
           {/* Language switcher */}
           <div className="space-x-2 ml-4">
