@@ -1,15 +1,7 @@
+// DrawingCanvas.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line, Circle, Image as KonvaImage } from "react-konva";
 import { HexColorPicker } from "react-colorful";
-
-const steps = [
-  {
-    title: "Pasul 1: Forma feței",
-    description: "Începe prin a trasa un oval pentru forma generală a capului.",
-    image: "/imagini/step1.gif",
-  },
-  // ... alte imagini dacă este nevoie
-];
 
 const TOOL_PENCIL = "pencil";
 const TOOL_BRUSH = "brush";
@@ -45,7 +37,7 @@ function segmentIntersectsCircle(x1, y1, x2, y2, cx, cy, r) {
   discriminant = Math.sqrt(discriminant);
   const t1 = (-b - discriminant) / (2 * a);
   const t2 = (-b + discriminant) / (2 * a);
-  return t1 >= 0 && t1 <= 1 || t2 >= 0 && t2 <= 1;
+  return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
 }
 
 function eraseAtPosition(linesArray, cx, cy, r) {
@@ -83,9 +75,7 @@ function eraseAtPosition(linesArray, cx, cy, r) {
   return newLines;
 }
 
-export default function Home() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [showOverlay, setShowOverlay] = useState(true);
+export default function DrawingCanvas({ overlayImageUrl }) {
   const [lines, setLines] = useState([]);
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -95,10 +85,10 @@ export default function Home() {
   const [color, setColor] = useState("#000000");
   const [manualColorInput, setManualColorInput] = useState("#000000");
   const [cursorPos, setCursorPos] = useState(null);
-  const overlayImage = useImage(showOverlay ? steps[currentStep]?.image : null);
+
+  const overlayImage = useImage(overlayImageUrl);
 
   const isDrawing = useRef(false);
-  const stageRef = useRef(null);
 
   const updateLines = (newLines) => {
     setHistory((prev) => [...prev, lines]);
@@ -233,171 +223,134 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [lines, history, redoStack]);
 
-  const step = steps[currentStep] || {};
-
   return (
-    <main className="min-h-screen p-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50">
-      <div>
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTool(t)}
-              className={`px-4 py-2 rounded border ${
-                tool === t ? "bg-blue-600 text-white" : "bg-white"
-              }`}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-
-          <button onClick={handleUndo} className="px-4 py-2 rounded bg-yellow-500 text-white">
-            Undo
-          </button>
-          <button onClick={handleRedo} className="px-4 py-2 rounded bg-green-600 text-white">
-            Redo
-          </button>
-
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((t) => (
           <button
-            onClick={() => {
-              setLines([]);
-              setHistory([]);
-              setRedoStack([]);
-            }}
-            className="ml-auto px-4 py-2 rounded bg-red-600 text-white"
+            key={t}
+            onClick={() => setTool(t)}
+            className={`px-4 py-2 rounded border ${
+              tool === t ? "bg-blue-600 text-white" : "bg-white"
+            }`}
           >
-            Reset
+            {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
-        </div>
+        ))}
 
-        <div className="mb-4 flex items-center gap-4">
-          <label className="flex items-center gap-2 select-none">
-            Diametru:
-            <input
-              type="range"
-              min={1}
-              max={30}
-              value={strokeWidth}
-              onChange={(e) => setStrokeWidth(Number(e.target.value))}
-              className="ml-2"
-            />
-            <span>{strokeWidth}px</span>
-          </label>
+        <button onClick={handleUndo} className="px-4 py-2 rounded bg-yellow-500 text-white">
+          Undo
+        </button>
+        <button onClick={handleRedo} className="px-4 py-2 rounded bg-green-600 text-white">
+          Redo
+        </button>
 
-          <label className="flex items-center gap-2 select-none">
-            Opacitate:
-            <input
-              type="range"
-              min={0.1}
-              max={1}
-              step={0.05}
-              value={opacity}
-              onChange={(e) => setOpacity(Number(e.target.value))}
-              className="ml-2"
-            />
-            <span>{Math.round(opacity * 100)}%</span>
-          </label>
-        </div>
-
-        <div className="mb-6 max-w-xs">
-          <HexColorPicker color={color} onChange={setColor} />
-          <input
-            type="text"
-            value={manualColorInput}
-            onChange={handleManualColorChange}
-            className="mt-2 w-full border rounded px-2 py-1 text-center font-mono"
-            placeholder="#000000"
-            maxLength={7}
-          />
-        </div>
-
-        <Stage
-          ref={stageRef}
-          width={500}
-          height={500}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          className="border rounded shadow bg-white cursor-none"
+        <button
+          onClick={() => {
+            setLines([]);
+            setHistory([]);
+            setRedoStack([]);
+          }}
+          className="ml-auto px-4 py-2 rounded bg-red-600 text-white"
         >
-          <Layer>
-            {showOverlay && overlayImage && (
-              <KonvaImage image={overlayImage} width={500} height={500} opacity={0.3} />
-            )}
-          </Layer>
-
-          <Layer>
-            {lines.map((line, i) =>
-              line.isFillRect ? (
-                <rect key={i} x={0} y={0} width={500} height={500} fill={line.fill} opacity={line.opacity} />
-              ) : (
-                <Line
-                  key={i}
-                  points={line.points}
-                  stroke={line.stroke}
-                  strokeWidth={line.strokeWidth}
-                  tension={line.tension}
-                  lineCap="round"
-                  lineJoin="round"
-                  globalCompositeOperation={line.compositeOperation || "source-over"}
-                  opacity={line.opacity || 1}
-                />
-              )
-            )}
-            {cursorPos && (
-  <Circle
-    x={cursorPos.x}
-    y={cursorPos.y}
-    radius={strokeWidth / 2}
-    stroke={tool === TOOL_ERASER? "#999" : "#333"}
-    strokeWidth={3}
-    fillEnabled={false}
-    listening={false}
-  />
-)}
-          </Layer>
-        </Stage>
-
-        <div className="mt-6 flex items-center gap-4">
-          <button
-            onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
-            disabled={currentStep === 0}
-            className="px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
-          >
-            Înapoi
-          </button>
-          <button
-            onClick={() => setCurrentStep((s) => Math.min(s + 1, steps.length - 1))}
-            disabled={currentStep === steps.length - 1}
-            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-          >
-            Următorul
-          </button>
-
-          <label className="ml-auto flex items-center gap-2 select-none">
-            <input
-              type="checkbox"
-              checked={showOverlay}
-              onChange={() => setShowOverlay((v) => !v)}
-              className="w-5 h-5"
-            />
-            Canvas transparent ghidat
-          </label>
-        </div>
+          Reset
+        </button>
       </div>
 
-      <div className="bg-white p-6 rounded shadow flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold mb-4">{step.title}</h2>
-        <p className="mb-4 max-w-md text-center">{step.description}</p>
-        {step.image && (
-          <img
-            src={step.image}
-            alt={`Step ${currentStep + 1}`}
-            className="max-w-full max-h-64 rounded border"
-            loading="lazy"
+      <div className="mb-4 flex items-center gap-4">
+        <label className="flex items-center gap-2 select-none">
+          Diametru:
+          <input
+            type="range"
+            min={1}
+            max={30}
+            value={strokeWidth}
+            onChange={(e) => setStrokeWidth(Number(e.target.value))}
+            className="ml-2"
           />
-        )}
+          <span>{strokeWidth}px</span>
+        </label>
+
+        <label className="flex items-center gap-2 select-none">
+          Opacitate:
+          <input
+            type="range"
+            min={0.1}
+            max={1}
+            step={0.05}
+            value={opacity}
+            onChange={(e) => setOpacity(Number(e.target.value))}
+            className="ml-2"
+          />
+          <span>{Math.round(opacity * 100)}%</span>
+        </label>
       </div>
-    </main>
+
+      <div className="mb-6 max-w-xs">
+        <HexColorPicker color={color} onChange={setColor} />
+        <input
+          type="text"
+          value={manualColorInput}
+          onChange={handleManualColorChange}
+          className="mt-2 w-full border rounded px-2 py-1 text-center font-mono"
+          placeholder="#000000"
+          maxLength={7}
+        />
+      </div>
+
+      <Stage
+        width={500}
+        height={500}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        className="border rounded shadow bg-white cursor-none"
+      >
+        <Layer>
+          {overlayImage && (
+            <KonvaImage image={overlayImage} width={500} height={500} opacity={0.3} />
+          )}
+        </Layer>
+
+        <Layer>
+          {lines.map((line, i) =>
+            line.isFillRect ? (
+              <rect
+                key={i}
+                x={0}
+                y={0}
+                width={500}
+                height={500}
+                fill={line.fill}
+                opacity={line.opacity}
+              />
+            ) : (
+              <Line
+                key={i}
+                points={line.points}
+                stroke={line.stroke}
+                strokeWidth={line.strokeWidth}
+                tension={line.tension}
+                lineCap="round"
+                lineJoin="round"
+                globalCompositeOperation={line.compositeOperation || "source-over"}
+                opacity={line.opacity || 1}
+              />
+            )
+          )}
+          {cursorPos && (
+            <Circle
+              x={cursorPos.x}
+              y={cursorPos.y}
+              radius={strokeWidth / 2}
+              stroke={tool === TOOL_ERASER ? "#999" : "#333"}
+              strokeWidth={3}
+              fillEnabled={false}
+              listening={false}
+            />
+          )}
+        </Layer>
+      </Stage>
+    </div>
   );
 }
