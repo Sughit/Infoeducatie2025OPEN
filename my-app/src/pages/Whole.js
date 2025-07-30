@@ -8,10 +8,10 @@ const Whole = () => {
   const [imageWidth, setImageWidth] = useState(384);
   const imageRef = useRef(null);
 
-  const baseURL = `${process.env.REACT_APP_SOCKET_URL}sketches/whole`;
+  const baseURL = `${process.env.REACT_APP_SOCKET_URL}/sketches/whole`;
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_SOCKET_URL}api/whole-images`)
+    fetch(`${process.env.REACT_APP_SOCKET_URL}/api/whole-images`)
       .then((res) => res.json())
       .then((data) => setImages(data))
       .catch((err) => console.error("Eroare la încărcare imagini:", err));
