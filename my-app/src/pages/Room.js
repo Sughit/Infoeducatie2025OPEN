@@ -13,6 +13,8 @@ const Room = () => {
 
   const nickname = searchParams.get("nick") || "Anonim";
 
+  const [gameData, setGameData] = useState(null);
+
   console.log("Connected:", socket.id);
 
 
@@ -32,8 +34,10 @@ const Room = () => {
       setGameStarted(false);
     });
 
-    socket.on("start_game", () => {
+    socket.on("start_game", (data) => {
+      console.log("Received game data:", data);
       setGameStarted(true);
+      setGameData(data); 
     });
 
     return () => {
@@ -67,6 +71,29 @@ const Room = () => {
         </div>
       ) : (
         <p className="text-gray-600">Se așteaptă un alt jucător...</p>
+      )}
+      {gameData?.mode === "caricature" && (
+        <div className="mt-4 text-left bg-yellow-100 p-4 rounded-xl">
+          <h2 className="text-lg font-bold text-yellow-800 mb-2">Trăsături pentru caricatură:</h2>
+          <ul className="list-disc pl-6 text-gray-800">
+            {Object.entries(gameData.traits).map(([key, value], idx) => (
+              <li key={idx}>
+                <strong>{key}:</strong> {value}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {gameData?.mode === "realistic" && (
+        <div className="mt-4 text-left bg-blue-100 p-4 rounded-xl">
+          <h2 className="text-lg font-bold text-blue-800 mb-2">Imagine pentru portret realist:</h2>
+          <img
+            src={gameData.image}
+            alt="Portret"
+            className="max-w-xs rounded shadow-md border"
+          />
+        </div>
       )}
     </div>
   );
