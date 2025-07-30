@@ -1,6 +1,6 @@
 {
   "join_room": "Intră într-o cameră",
-  "nickname": "Nickname",
+  "nickname": "Porecla",
   "room_name": "Nume cameră",
   "join": "Conectează-te",
   "selected_mode": "Mod selectat",
@@ -18,12 +18,6 @@
   "silhouette_desc": "Exersează conturul corpului și poziționarea acestuia.",
   "whole": "Întreg portretul",
   "whole_desc": "Combină tot ce ai învățat pentru a realiza un portret complet.",
-  "room_full": "Camera este plină. Te rugăm să alegi alta.",
-  "connected_players": "Jucători conectați",
-  "game_started": "Jocul a început!",
-  "waiting": "Se așteaptă un alt jucător...",
-  "traits_title": "Trăsături pentru caricatură",
-  "portrait_title": "Imagine pentru portret realist",
   "games": "Jocuri",
   "app_name": "ArtPortrait",
   "hero_tagline": "Desenează și învață",
@@ -34,7 +28,7 @@
   "lesson_eye_desc": "Învață umbrele și expresivitatea ochilor.",
   "lesson_face_title": "Fața",
   "lesson_face_desc": "Proporții și simetrie facială.",
-  "lesson_silhouette_title": "🧍 Silueta",
+  "lesson_silhouette_title": "Silueta",
   "lesson_silhouette_desc": "Conturul și postura corpului.",
   "lesson_whole_title": "Portret complet",
   "lesson_whole_desc": "Aplică totul într-un desen final.",
@@ -48,6 +42,5 @@
   "caricature_game_desc": "Creează personaje amuzante din trăsături aleatorii.",
   "caricature_bullet1": "Primești trăsături ca „ochi mari”, „nas lung”",
   "caricature_bullet2": "Desenează creativ",
-  "start_game": "Începe un joc",
-  "lessons_page_title": "Lecții"
+  "start_game": "Începe un joc"
 }

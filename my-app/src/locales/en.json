@@ -18,12 +18,6 @@
   "silhouette_desc": "Practice body contour and positioning.",
   "whole": "Full Portrait",
   "whole_desc": "Combine everything you’ve learned to create a complete portrait.",
-  "room_full": "The room is full. Please choose another one.",
-  "connected_players": "Connected players",
-  "game_started": "The game has started!",
-  "waiting": "Waiting for another player...",
-  "traits_title": "Traits for caricature",
-  "portrait_title": "Image for realistic portrait",
   "games": "Games",
   "app_name": "ArtPortrait",
   "hero_tagline": "Draw and Learn",
@@ -48,6 +42,5 @@
   "caricature_game_desc": "Create funny characters from random features.",
   "caricature_bullet1": "Receive traits like “big eyes”, “long nose”",
   "caricature_bullet2": "Draw creatively",
-  "start_game": "Start a Game",
-  "lessons_page_title": "Lessons"
+  "start_game": "Start a Game"
 }
