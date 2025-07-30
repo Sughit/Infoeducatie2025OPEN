@@ -25,23 +25,26 @@ const JoinRoom = () => {
           Mod selectat: <span className="font-semibold">{mode}</span>
         </p>
       )}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-4 w-full max-w-xl"
+      >
         <input
           placeholder="Nickname"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
-          className="p-2 border rounded w-64"
+          className="p-3 border border-gray-300 rounded-lg flex-1"
         />
         <input
           type="text"
           placeholder="Nume cameră"
           value={roomName}
           onChange={(e) => setRoomName(e.target.value)}
-          className="p-2 border rounded w-64"
+          className="p-3 border border-gray-300 rounded-lg flex-1"
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
         >
           Conectează-te
         </button>

@@ -59,9 +59,14 @@ const Room = () => {
     <div className="p-6 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Camera: {roomName}</h1>
       <p className="mb-2 text-gray-700">Jucători conectați: {players.length}/2</p>
-      <ul className="list-disc pl-6 mt-2 text-gray-800">
+      <ul className="flex gap-4 mt-2 flex-wrap text-gray-800">
         {players.map((name, idx) => (
-          <li key={idx}>{name}</li>
+          <li
+            key={idx}
+            className="px-3 py-1 bg-gray-200 rounded-full shadow-sm text-sm font-medium"
+          >
+            {name}
+          </li>
         ))}
       </ul>
 
@@ -73,7 +78,7 @@ const Room = () => {
         <p className="text-gray-600">Se așteaptă un alt jucător...</p>
       )}
       {gameData?.mode === "caricature" && (
-        <div className="mt-4 text-left bg-yellow-100 p-4 rounded-xl">
+        <div className="mt-6 bg-yellow-100/80 p-4 rounded-xl border-l-4 border-yellow-400 shadow">
           <h2 className="text-lg font-bold text-yellow-800 mb-2">Trăsături pentru caricatură:</h2>
           <ul className="list-disc pl-6 text-gray-800">
             {Object.entries(gameData.traits).map(([key, value], idx) => (

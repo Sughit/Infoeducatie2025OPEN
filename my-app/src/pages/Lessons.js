@@ -26,14 +26,14 @@ const lessons = [
 
 const Lectii = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 px-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-24 px-4">
       {lessons.map((lesson, index) => (
         <Link
           to={`/lessons/${lesson.slug}`}
           key={index}
-          className="block bg-white rounded-xl shadow-md p-6 hover:shadow-lg hover:bg-blue-50 transition"
+          className="group block bg-white rounded-xl shadow-md p-6 hover:shadow-lg hover:bg-indigo-50 transition-transform transform hover:scale-105"
         >
-          <h2 className="text-xl font-semibold text-gray-800">{lesson.title}</h2>
+          <h2 className="text-xl font-bold text-indigo-700 group-hover:text-indigo-900">{lesson.title}</h2>
           <p className="text-gray-600 mt-2">{lesson.description}</p>
         </Link>
       ))}
