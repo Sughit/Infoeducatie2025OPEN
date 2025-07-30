@@ -8,10 +8,10 @@ const Eye = () => {
   const [imageWidth, setImageWidth] = useState(384);
   const imageRef = useRef(null);
 
-  const baseURL = `${process.env.REACT_APP_SOCKET_URL}sketches/eye`;
+  const baseURL = `${process.env.REACT_APP_SOCKET_URL}/sketches/eye`;
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_SOCKET_URL}api/eye-images`)
+    fetch(`${process.env.REACT_APP_SOCKET_URL}/api/eye-images`)
       .then((res) => res.json())
       .then((data) => setImages(data))
       .catch((err) => console.error("Eroare la încărcare imagini:", err));

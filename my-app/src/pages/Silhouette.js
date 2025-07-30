@@ -8,10 +8,10 @@ const Silhouette = () => {
   const [imageWidth, setImageWidth] = useState(384);
   const imageRef = useRef(null);
 
-  const baseURL = `${process.env.REACT_APP_SOCKET_URL}sketches/silhouette`;
+  const baseURL = `${process.env.REACT_APP_SOCKET_URL}/sketches/silhouette`;
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_SOCKET_URL}api/silhouette-images`)
+    fetch(`${process.env.REACT_APP_SOCKET_URL}/api/silhouette-images`)
       .then((res) => res.json())
       .then((data) => setImages(data))
       .catch((err) => console.error("Eroare la încărcare imagini:", err));
