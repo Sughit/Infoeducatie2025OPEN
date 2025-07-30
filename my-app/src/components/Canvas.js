@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line, Circle, Image as KonvaImage } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 
-// --- Config & helpers ---
+// --- Configurație & funcții ajutătoare ---
 const steps = [
   {
     title: "Pasul 1: Forma feței",
@@ -33,7 +33,7 @@ function useImage(url) {
   return image;
 }
 
-// --- Geometrie pentru eraser ---
+// --- Geometrie pentru radieră ---
 function segmentIntersectsCircle(x1, y1, x2, y2, cx, cy, r) {
   const dx = x2 - x1;
   const dy = y2 - y1;
@@ -50,8 +50,6 @@ function segmentIntersectsCircle(x1, y1, x2, y2, cx, cy, r) {
   return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
 }
 
-// Înlocuiește funcția eraseAtPosition cu aceasta:
-
 function eraseAtPosition(linesArray, cx, cy, r) {
   function pointInCircle(x, y, cx, cy, r) {
     const dx = x - cx;
@@ -64,7 +62,6 @@ function eraseAtPosition(linesArray, cx, cy, r) {
   }
 
   function segmentCircleIntersection(x1, y1, x2, y2, cx, cy, r) {
-    // Returnează t (0..1) pentru punctul de intersecție, sau null dacă nu există
     const dx = x2 - x1;
     const dy = y2 - y1;
     const fx = x1 - cx;
@@ -85,6 +82,12 @@ function eraseAtPosition(linesArray, cx, cy, r) {
 
   const newLines = [];
   linesArray.forEach((line) => {
+    // Nu ștergem obiecte de tip 'bucketFill' cu radiera
+    if (line.type === 'bucketFill') {
+      newLines.push(line);
+      return;
+    }
+
     const pts = line.points;
     let currentSegment = [];
     for (let i = 0; i < pts.length - 2; i += 2) {
@@ -97,11 +100,9 @@ function eraseAtPosition(linesArray, cx, cy, r) {
       const intersections = segmentCircleIntersection(x1, y1, x2, y2, cx, cy, r);
 
       if (!p1In && !p2In && intersections.length === 0) {
-        // Tot segmentul e în afara cercului, îl păstrăm
         if (currentSegment.length === 0) currentSegment.push(x1, y1);
         currentSegment.push(x2, y2);
       } else if (!p1In && p2In && intersections.length > 0) {
-        // Intră în cerc: păstrăm până la intersecție
         const t = Math.min(...intersections);
         const ix = lerp(x1, x2, t);
         const iy = lerp(y1, y2, t);
@@ -110,27 +111,22 @@ function eraseAtPosition(linesArray, cx, cy, r) {
         newLines.push({ ...line, points: [...currentSegment] });
         currentSegment = [];
       } else if (p1In && !p2In && intersections.length > 0) {
-        // Iese din cerc: începem un nou segment de la intersecție
         const t = Math.max(...intersections);
         const ix = lerp(x1, x2, t);
         const iy = lerp(y1, y2, t);
         currentSegment = [ix, iy, x2, y2];
       } else if (!p1In && !p2In && intersections.length === 2) {
-        // Segmentul traversează complet cercul: două intersecții, păstrăm două bucăți
         const tA = Math.min(...intersections);
         const tB = Math.max(...intersections);
         const ixA = lerp(x1, x2, tA);
         const iyA = lerp(y1, y2, tA);
         const ixB = lerp(x1, x2, tB);
         const iyB = lerp(y1, y2, tB);
-        // Prima bucată
         if (currentSegment.length === 0) currentSegment.push(x1, y1);
         currentSegment.push(ixA, iyA);
         newLines.push({ ...line, points: [...currentSegment] });
-        // A doua bucată
         currentSegment = [ixB, iyB, x2, y2];
       } else {
-        // Ambele puncte în cerc sau segment complet în cerc: nu păstrăm nimic
         if (currentSegment.length >= 4) {
           newLines.push({ ...line, points: [...currentSegment] });
         }
@@ -142,6 +138,36 @@ function eraseAtPosition(linesArray, cx, cy, r) {
     }
   });
   return newLines;
+}
+
+// --- Funcții ajutătoare pentru bucket fill ---
+function hexToRgba(hex) {
+  let c = hex.replace("#", "");
+  if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+  const num = parseInt(c, 16);
+  return [num >> 16, (num >> 8) & 255, num & 255, 255];
+}
+function colorMatch(a, b) {
+  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+}
+function floodFill(imageData, x, y, fillColor) {
+  const { data, width, height } = imageData;
+  const stack = [[x, y]];
+  const idx = (y * width + x) * 4;
+  const targetColor = [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+  if (colorMatch(targetColor, fillColor)) return;
+  while (stack.length) {
+    const [cx, cy] = stack.pop();
+    if (cx < 0 || cy < 0 || cx >= width || cy >= height) continue;
+    const i = (cy * width + cx) * 4;
+    const current = [data[i], data[i + 1], data[i + 2], data[i + 3]];
+    if (!colorMatch(current, targetColor)) continue;
+    data[i] = fillColor[0];
+    data[i + 1] = fillColor[1];
+    data[i + 2] = fillColor[2];
+    data[i + 3] = fillColor[3];
+    stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+  }
 }
 
 // --- Componenta principală ---
@@ -161,29 +187,93 @@ export default function Canvas() {
 
   const isDrawing = useRef(false);
   const stageRef = useRef(null);
+  const hiddenCanvasRef = useRef(null);
+
+  // Limita pașilor pentru Undo
+  const MAX_UNDO_STEPS = 30;
 
   const updateLines = (newLines) => {
-    setHistory((prev) => [...prev, lines]);
+    setHistory((prev) => {
+      const newHistory = [...prev, lines];
+      // Limitează istoricul la MAX_UNDO_STEPS
+      if (newHistory.length > MAX_UNDO_STEPS) {
+        return newHistory.slice(newHistory.length - MAX_UNDO_STEPS);
+      }
+      return newHistory;
+    });
     setLines(newLines);
     setRedoStack([]);
   };
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = async (e) => {
     const pos = e.target.getStage().getPointerPosition();
     isDrawing.current = true;
 
     if (tool === TOOL_BUCKET) {
+      const canvas = hiddenCanvasRef.current;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.clearRect(0, 0, 500, 500);
+
+      // Desenează toate elementele existente pe canvas-ul ascuns
+      const drawPromises = lines.map(line => {
+        return new Promise(resolve => {
+            if (line.type === 'bucketFill') {
+                const img = new Image();
+                img.src = line.imageData;
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, 500, 500);
+                    resolve();
+                };
+                img.onerror = () => resolve(); // Continuă chiar dacă imaginea nu se încarcă
+            } else if (line.isFillRect) {
+              ctx.globalAlpha = line.opacity ?? 1;
+              ctx.fillStyle = line.fill;
+              ctx.fillRect(0, 0, 500, 500);
+              resolve();
+            } else {
+              ctx.globalAlpha = line.opacity ?? 1;
+              ctx.strokeStyle = line.stroke;
+              ctx.lineWidth = line.strokeWidth;
+              ctx.lineCap = line.lineCap || "round";
+              ctx.lineJoin = line.lineJoin || "round";
+              ctx.beginPath();
+              const pts = line.points;
+              if (pts.length > 1) {
+                  ctx.moveTo(pts[0], pts[1]);
+                  for (let i = 2; i < pts.length; i += 2) {
+                      ctx.lineTo(pts[i], pts[i + 1]);
+                  }
+              }
+              ctx.stroke();
+              resolve();
+            }
+        });
+      });
+      
+      // Așteaptă ca toate elementele să fie desenate înainte de flood fill
+      await Promise.all(drawPromises);
+      ctx.globalAlpha = 1;
+
+      // Aplică algoritmul flood fill
+      const imageData = ctx.getImageData(0, 0, 500, 500);
+      const rgbaColor = hexToRgba(color);
+      floodFill(imageData, Math.floor(pos.x), Math.floor(pos.y), rgbaColor);
+      ctx.putImageData(imageData, 0, 0);
+
+      // Salvează noua umplere ca un obiect în lista de linii
+      const newFillDataUrl = canvas.toDataURL();
+
       updateLines([
+        ...lines,
         {
-          points: [0, 0, 500, 0, 500, 500, 0, 500],
-          stroke: color,
-          strokeWidth: 0,
-          fill: color,
-          isFillRect: true,
-          opacity,
-          compositeOperation: "source-over",
+          type: 'bucketFill',
+          imageData: newFillDataUrl,
+          opacity: opacity,
+          width: 500,
+          height: 500,
         },
       ]);
+      
       isDrawing.current = false;
       return;
     }
@@ -192,6 +282,7 @@ export default function Canvas() {
       updateLines([
         ...lines,
         {
+          type: 'stroke',
           points: [pos.x, pos.y],
           stroke: color,
           strokeWidth,
@@ -213,7 +304,6 @@ export default function Canvas() {
     if (!isDrawing.current) return;
 
     if (tool === TOOL_ERASER) {
-      // Folosește exact același radius ca la cursor
       updateLines(eraseAtPosition(lines, pos.x, pos.y, strokeWidth / 2));
     } else if (tool === TOOL_PEN) {
       const newLines = [...lines];
@@ -230,6 +320,7 @@ export default function Canvas() {
       if (newWidth > strokeWidth) newWidth = strokeWidth;
       if (dist < 1) return;
       const segment = {
+        type: 'stroke',
         points: [lastX, lastY, pos.x, pos.y],
         stroke: color,
         strokeWidth: newWidth,
@@ -300,169 +391,196 @@ export default function Canvas() {
 
   return (
     <main className="min-h-screen p-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50">
-      <div>
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTool(t)}
-              className={`px-4 py-2 rounded border ${
-                tool === t ? "bg-blue-600 text-white" : "bg-white"
-              }`}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+        <canvas
+            ref={hiddenCanvasRef}
+            width={500}
+            height={500}
+            style={{ display: "none" }}
+        />
+        <div>
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+            {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((t) => (
+                <button
+                key={t}
+                onClick={() => {
+                    setTool(t);
+                    isDrawing.current = false;
+                }}
+                className={`px-4 py-2 rounded border ${
+                    tool === t ? "bg-blue-600 text-white" : "bg-white"
+                }`}
+                >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+            ))}
+
+            <button onClick={handleUndo} className="px-4 py-2 rounded bg-yellow-500 text-white">
+                Undo
             </button>
-          ))}
+            <button onClick={handleRedo} className="px-4 py-2 rounded bg-green-600 text-white">
+                Redo
+            </button>
 
-          <button onClick={handleUndo} className="px-4 py-2 rounded bg-yellow-500 text-white">
-            Undo
-          </button>
-          <button onClick={handleRedo} className="px-4 py-2 rounded bg-green-600 text-white">
-            Redo
-          </button>
+            <button
+                onClick={() => {
+                setLines([]);
+                setHistory([]);
+                setRedoStack([]);
+                }}
+                className="ml-auto px-4 py-2 rounded bg-red-600 text-white"
+            >
+                Reset
+            </button>
+            </div>
 
-          <button
-            onClick={() => {
-              setLines([]);
-              setHistory([]);
-              setRedoStack([]);
-            }}
-            className="ml-auto px-4 py-2 rounded bg-red-600 text-white"
-          >
-            Reset
-          </button>
-        </div>
-
-        <div className="mb-4 flex items-center gap-4">
-          <label className="flex items-center gap-2 select-none">
-            Diametru:
-            <input
-              type="range"
-              min={1}
-              max={30}
-              value={strokeWidth}
-              onChange={(e) => setStrokeWidth(Number(e.target.value))}
-              className="ml-2"
-            />
-            <span>{strokeWidth}px</span>
-          </label>
-
-          <label className="flex items-center gap-2 select-none">
-            Opacitate:
-            <input
-              type="range"
-              min={0.1}
-              max={1}
-              step={0.05}
-              value={opacity}
-              onChange={(e) => setOpacity(Number(e.target.value))}
-              className="ml-2"
-            />
-            <span>{Math.round(opacity * 100)}%</span>
-          </label>
-        </div>
-
-        <div className="mb-6 max-w-xs">
-          <HexColorPicker color={color} onChange={setColor} />
-          <input
-            type="text"
-            value={manualColorInput}
-            onChange={handleManualColorChange}
-            className="mt-2 w-full border rounded px-2 py-1 text-center font-mono"
-            placeholder="#000000"
-            maxLength={7}
-          />
-          <div className="mt-1 text-center font-medium text-gray-700">{color}</div>
-        </div>
-
-        <Stage
-          ref={stageRef}
-          width={500}
-          height={500}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          className="border rounded shadow bg-white cursor-none"
-        >
-          <Layer>
-            {showOverlay && overlayImage && (
-              <KonvaImage image={overlayImage} width={500} height={500} opacity={0.3} />
-            )}
-          </Layer>
-
-          <Layer>
-            {lines.map((line, i) =>
-              line.isFillRect ? (
-                <rect key={i} x={0} y={0} width={500} height={500} fill={line.fill} opacity={line.opacity} />
-              ) : (
-                <Line
-                  key={i}
-                  points={line.points}
-                  stroke={line.stroke}
-                  strokeWidth={line.strokeWidth}
-                  tension={line.tension}
-                  lineCap="round"
-                  lineJoin="round"
-                  globalCompositeOperation={line.compositeOperation || "source-over"}
-                  opacity={line.opacity || 1}
+            <div className="mb-4 flex items-center gap-4">
+            <label className="flex items-center gap-2 select-none">
+                Diametru:
+                <input
+                type="range"
+                min={1}
+                max={30}
+                value={strokeWidth}
+                onChange={(e) => setStrokeWidth(Number(e.target.value))}
+                className="ml-2"
                 />
-              )
-            )}
-            {cursorPos && (
-              <Circle
-                x={cursorPos.x}
-                y={cursorPos.y}
-                radius={strokeWidth / 2}
-                stroke={tool === TOOL_ERASER ? "#999" : "#333"}
-                strokeWidth={1}
-                fillEnabled={false}
-                dash={[]} // fără linie punctată
-                listening={false}
-              />
-            )}
-          </Layer>
-        </Stage>
+                <span>{strokeWidth}px</span>
+            </label>
 
-        <div className="mt-6 flex items-center gap-4">
-          <button
-            onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
-            disabled={currentStep === 0}
-            className="px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
-          >
-            Înapoi
-          </button>
-          <button
-            onClick={() => setCurrentStep((s) => Math.min(s + 1, steps.length - 1))}
-            disabled={currentStep === steps.length - 1}
-            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-          >
-            Următorul
-          </button>
+            <label className="flex items-center gap-2 select-none">
+                Opacitate:
+                <input
+                type="range"
+                min={0.1}
+                max={1}
+                step={0.05}
+                value={opacity}
+                onChange={(e) => setOpacity(Number(e.target.value))}
+                className="ml-2"
+                />
+                <span>{Math.round(opacity * 100)}%</span>
+            </label>
+            </div>
 
-          <label className="ml-auto flex items-center gap-2 select-none">
+            <div className="mb-6 max-w-xs">
+            <HexColorPicker color={color} onChange={setColor} />
             <input
-              type="checkbox"
-              checked={showOverlay}
-              onChange={() => setShowOverlay((v) => !v)}
-              className="w-5 h-5"
+                type="text"
+                value={manualColorInput}
+                onChange={handleManualColorChange}
+                className="mt-2 w-full border rounded px-2 py-1 text-center font-mono"
+                placeholder="#000000"
+                maxLength={7}
             />
-            Canvas transparent ghidat
-          </label>
-        </div>
-      </div>
+            </div>
 
-      <div className="bg-white p-6 rounded shadow flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold mb-4">{step.title}</h2>
-        <p className="mb-4 max-w-md text-center">{step.description}</p>
-        {step.image && (
-          <img
-            src={step.image}
-            alt={`Step ${currentStep + 1}`}
-            className="max-w-full max-h-64 rounded border"
-            loading="lazy"
-          />
-        )}
-      </div>
+            <Stage
+            ref={stageRef}
+            width={500}
+            height={500}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            className="border rounded shadow bg-white cursor-none"
+            >
+            <Layer>
+                {showOverlay && overlayImage && (
+                <KonvaImage image={overlayImage} width={500} height={500} opacity={0.3} />
+                )}
+            </Layer>
+            <Layer>
+                {lines.map((line, i) => {
+                    if (line.type === 'bucketFill') {
+                        // Randează umplerea cu găleata ca o imagine Konva
+                        const img = new window.Image();
+                        img.src = line.imageData;
+                        return (
+                            <KonvaImage 
+                                key={i} 
+                                image={img} 
+                                x={0} 
+                                y={0} 
+                                width={line.width} 
+                                height={line.height} 
+                                opacity={line.opacity} 
+                            />
+                        );
+                    } else if (line.isFillRect) {
+                        return (
+                            <rect key={i} x={0} y={0} width={500} height={500} fill={line.fill} opacity={line.opacity} />
+                        );
+                    } else {
+                        // Randează liniile obișnuite
+                        return (
+                            <Line
+                                key={i}
+                                points={line.points}
+                                stroke={line.stroke}
+                                strokeWidth={line.strokeWidth}
+                                tension={line.tension}
+                                lineCap="round"
+                                lineJoin="round"
+                                globalCompositeOperation={line.compositeOperation || "source-over"}
+                                opacity={line.opacity || 1}
+                            />
+                        );
+                    }
+                })}
+                {cursorPos && (
+                <Circle
+                    x={cursorPos.x}
+                    y={cursorPos.y}
+                    radius={strokeWidth / 2}
+                    stroke={tool === TOOL_ERASER ? "#999" : "#333"}
+                    strokeWidth={1}
+                    fillEnabled={false}
+                    dash={[]}
+                    listening={false}
+                />
+                )}
+            </Layer>
+            </Stage>
+
+            <div className="mt-6 flex items-center gap-4">
+            <button
+                onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
+                disabled={currentStep === 0}
+                className="px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
+            >
+                Înapoi
+            </button>
+            <button
+                onClick={() => setCurrentStep((s) => Math.min(s + 1, steps.length - 1))}
+                disabled={currentStep === steps.length - 1}
+                className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+            >
+                Următorul
+            </button>
+
+            <label className="ml-auto flex items-center gap-2 select-none">
+                <input
+                type="checkbox"
+                checked={showOverlay}
+                onChange={() => setShowOverlay((v) => !v)}
+                className="w-5 h-5"
+                />
+                Canvas transparent ghidat
+            </label>
+            </div>
+        </div>
+
+        <div className="bg-white p-6 rounded shadow flex flex-col items-center justify-center">
+            <h2 className="text-2xl font-bold mb-4">{step.title}</h2>
+            <p className="mb-4 max-w-md text-center">{step.description}</p>
+            {step.image && (
+            <img
+                src={step.image}
+                alt={`Step ${currentStep + 1}`}
+                className="max-w-full max-h-64 rounded border"
+                loading="lazy"
+            />
+            )}
+        </div>
     </main>
   );
-} 
+}
