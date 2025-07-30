@@ -22,7 +22,7 @@ const Games = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto mt-24">
       <h1 className="text-3xl font-bold mb-8 text-center">Alege un mod de joc</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {games.map((game, index) => (

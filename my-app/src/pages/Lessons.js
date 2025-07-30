@@ -26,7 +26,7 @@ const lessons = [
 
 const Lectii = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 px-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-24 px-4">
       {lessons.map((lesson, index) => (
         <Link
           to={`/lessons/${lesson.slug}`}
