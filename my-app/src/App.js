@@ -14,6 +14,8 @@ import Whole from './pages/Whole';
 import Room from './pages/Room';
 import JoinRoom from './pages/JoinRoom';
 
+import Canvas from './components/Canvas';
+
 function App() {
   return (
     <Router>
@@ -31,6 +33,8 @@ function App() {
 
           <Route path="/room/:roomName" element={<Room />} />
           <Route path="/join" element={<JoinRoom />} />
+          
+          <Route path='/Canvas' element={<Canvas/>} />
         </Routes>
       </div>
     </Router>
