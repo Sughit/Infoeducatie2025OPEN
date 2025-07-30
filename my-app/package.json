@@ -5,6 +5,7 @@
   "dependencies": {
     "cra-template-pwa": "2.0.0",
     "dotenv": "^17.2.1",
+    "firebase": "^12.0.0",
     "framer-motion": "^12.23.12",
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",
@@ -16,7 +17,7 @@
     "react-i18next": "^15.6.1",
     "react-konva": "^19.0.7",
     "react-router-dom": "^7.7.1",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "react-scroll-snap": "^1.0.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",

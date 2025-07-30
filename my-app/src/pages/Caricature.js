@@ -73,7 +73,11 @@ const Caricature = ({ socket, players, room, ownNickname, endTime }) => {
         ref={containerRef}
       >
         {!roundOver ? (
-          <Canvas canvasSize={canvasSize} />
+          <Canvas 
+            ref={canvasRef}
+            canvasSize={canvasSize}
+            onChange={setDrawingUrl} 
+          />
         ) : (
           <img
             src={drawings[ownNickname]}

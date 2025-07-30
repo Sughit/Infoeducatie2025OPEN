@@ -50,6 +50,7 @@ export default function Canvas({ canvasSize = 460 }) {
   const [color, setColor] = useState("#000000");
   const [manualColorInput, setManualColorInput] = useState("#000000");
   const [cursorPos, setCursorPos] = useState(null);
+  const [exportUri, setExportUri] = useState(null);
 
   const isDrawing = useRef(false);
   const stageRef = useRef(null);
@@ -57,6 +58,13 @@ export default function Canvas({ canvasSize = 460 }) {
   const lastPos = useRef(null);
   const konvaDrawingImageRef = useRef(new window.Image());
   const MAX_UNDO_STEPS = 30;
+
+  const handleExport = useCallback(() => {
+    const uri = stageRef.current.toDataURL();
+    console.log(uri);
+    setExportUri(uri);
+    if (onChange) onChange(uri);
+  }, [onChange]);
 
   const updateCanvasImage = useCallback((newImageDataUrl) => {
     setHistory((prev) => {
