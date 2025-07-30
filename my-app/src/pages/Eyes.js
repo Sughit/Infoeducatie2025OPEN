@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Canvas from "../components/Canvas"; 
 
 const Eye = () => {
   const [images, setImages] = useState([]);
@@ -30,12 +31,7 @@ const Eye = () => {
     <div className="flex flex-col md:flex-row h-screen">
       {/* Canvas în stânga */}
       <div className="md:w-1/2 w-full flex items-center justify-center bg-gray-100 border-r border-gray-200">
-        <canvas
-          id="eye-canvas"
-          width={500}
-          height={500}
-          className="bg-white shadow-lg rounded border border-gray-300"
-        />
+        <Canvas width={400} height={400} />
       </div>
 
       {/* Carusel în dreapta */}

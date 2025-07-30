@@ -2,16 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Stage, Layer, Circle, Image as KonvaImage } from "react-konva";
 import { HexColorPicker } from "react-colorful";
 
-// Definim pașii pentru ghid
-const steps = [
-  {
-    title: "Pasul 1: Forma feței",
-    description: "Începe prin a trasa un oval pentru forma generală a capului.",
-    image: "/imagini/step1.gif",
-  },
-  // Poți adăuga mai mulți pași aici
-];
-
 // Constante pentru unelte
 const TOOL_PENCIL = "pencil";
 const TOOL_BRUSH = "brush";
@@ -100,9 +90,6 @@ export default function Canvas() {
   const [color, setColor] = useState("#000000");
   const [manualColorInput, setManualColorInput] = useState("#000000");
   const [cursorPos, setCursorPos] = useState(null);
-
-  // Imaginea de overlay pentru ghid, încărcată cu hook-ul personalizat
-  const overlayImage = useImage(showOverlay ? steps[currentStep]?.image : null);
 
   // Ref-uri pentru elemente Canvas și Konva
   const isDrawing = useRef(false);
@@ -354,9 +341,6 @@ export default function Canvas() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleUndo, handleRedo]);
 
-  // Obiectul pasului curent din ghid
-  const step = steps[currentStep] || {};
-
   return (
     <main className="min-h-screen p-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50">
       {/* Canvas ascuns folosit pentru desenarea efectivă (context 2D) */}
@@ -457,12 +441,6 @@ export default function Canvas() {
           onMouseUp={handleMouseUp}
           className={`border rounded shadow bg-white cursor-none ${tool === TOOL_BUCKET ? 'cursor-crosshair' : ''}`}
         >
-          {/* Stratul pentru imaginea de ghid (overlay) */}
-          <Layer>
-            {showOverlay && overlayImage && (
-              <KonvaImage image={overlayImage} width={500} height={500} opacity={0.3} />
-            )}
-          </Layer>
           {/* Stratul pentru desenul utilizatorului */}
           <Layer>
             <KonvaImage
@@ -488,48 +466,6 @@ export default function Canvas() {
             )}
           </Layer>
         </Stage>
-
-        {/* Butoane pentru navigația prin pașii ghidului și opțiunea overlay */}
-        <div className="mt-6 flex items-center gap-4">
-          <button
-            onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
-            disabled={currentStep === 0}
-            className="px-4 py-2 rounded bg-gray-300 disabled:opacity-50"
-          >
-            Înapoi
-          </button>
-          <button
-            onClick={() => setCurrentStep((s) => Math.min(s + 1, steps.length - 1))}
-            disabled={currentStep === steps.length - 1}
-            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-          >
-            Următorul
-          </button>
-
-          <label className="ml-auto flex items-center gap-2 select-none">
-            <input
-              type="checkbox"
-              checked={showOverlay}
-              onChange={() => setShowOverlay((v) => !v)}
-              className="w-5 h-5"
-            />
-            Canvas transparent ghidat
-          </label>
-        </div>
-      </div>
-
-      {/* Secțiunea de descriere a pasului curent */}
-      <div className="bg-white p-6 rounded shadow flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold mb-4">{step.title}</h2>
-        <p className="mb-4 max-w-md text-center">{step.description}</p>
-        {step.image && (
-          <img
-            src={step.image}
-            alt={`Step ${currentStep + 1}`}
-            className="max-w-full max-h-64 rounded border"
-            loading="lazy"
-          />
-        )}
       </div>
     </main>
   );

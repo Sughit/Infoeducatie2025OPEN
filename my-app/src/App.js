@@ -14,7 +14,7 @@ import Whole from './pages/Whole';
 import Room from './pages/Room';
 import JoinRoom from './pages/JoinRoom';
 
-import Canvas from './components/Canvas';
+import Canvas from './components/CanvasTest';
 
 function App() {
   return (
