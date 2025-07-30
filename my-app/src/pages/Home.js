@@ -1,9 +1,15 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const { t, i18n } = useTranslation(); // Inițializăm hook-ul de traducere
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   const handleScroll = (e, id) => {
     e.preventDefault();
@@ -23,17 +29,17 @@ export default function Home() {
       >
         <div className="max-w-2xl w-full text-center px-6">
           <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4">
-            ArtPortrait – Desenează și Învață
+            {t("app_name")} – {t("hero_tagline")} {/* Traducem titlul și tagline-ul */}
           </h1>
           <p className="text-lg md:text-2xl text-white/80 mb-8">
-            Aplicație educativă și distractivă unde înveți să desenezi portrete și te joci cu prietenii în moduri creative.
+            {t("hero_description")} {/* Traducem descrierea principală */}
           </p>
           <a
             href="#lessons"
             onClick={(e) => handleScroll(e, "lessons")}
             className="inline-block bg-white text-blue-700 font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-white/90 transition"
           >
-            Vezi lecțiile
+            {t("view_lessons")} {/* Traducem textul butonului */}
           </a>
         </div>
       </section>
@@ -44,20 +50,21 @@ export default function Home() {
         className="snap-start h-screen bg-white flex justify-center items-center"
       >
         <div className="w-full max-w-6xl text-center px-6">
-          <h2 className="text-3xl md:text-5xl font-bold text-blue-800 mb-8">📚 Lecții de desen</h2>
+          <h2 className="text-3xl md:text-5xl font-bold text-blue-800 mb-8">{t("lessons_section_title")}</h2> {/* Traducem titlul secțiunii */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: "👁️ Ochi", desc: "Învață umbrele și expresivitatea ochilor." },
-              { title: "🙂 Fața", desc: "Proporții și simetrie facială." },
-              { title: "🧍 Silueta", desc: "Conturul și postura corpului." },
-              { title: "🖼️ Portret complet", desc: "Aplică totul într-un desen final." },
-            ].map(({ title, desc }) => (
+              // Folosim chei de traducere pentru titluri și descrieri
+              { titleKey: "lesson_eye_title", descKey: "lesson_eye_desc" },
+              { titleKey: "lesson_face_title", descKey: "lesson_face_desc" },
+              { titleKey: "lesson_silhouette_title", descKey: "lesson_silhouette_desc" },
+              { titleKey: "lesson_whole_title", descKey: "lesson_whole_desc" },
+            ].map(({ titleKey, descKey }) => ( // Aici destructurăm titleKey și descKey
               <div
-                key={title}
+                key={titleKey} // Folosim titleKey ca cheie unică
                 className="bg-blue-50 rounded-xl p-4 border border-blue-200 text-left"
               >
-                <h4 className="text-xl font-semibold text-blue-800 mb-2">{title}</h4>
-                <p className="text-gray-700">{desc}</p>
+                <h4 className="text-xl font-semibold text-blue-800 mb-2">{t(titleKey)}</h4> {/* Traducem titlul */}
+                <p className="text-gray-700">{t(descKey)}</p> {/* Traducem descrierea */}
               </div>
             ))}
           </div>
@@ -65,7 +72,7 @@ export default function Home() {
             onClick={() => navigate("/lessons")}
             className="mt-10 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
           >
-            Accesează lecțiile
+            {t("access_lessons")} {/* Traducem textul butonului */}
           </button>
         </div>
       </section>
@@ -76,35 +83,35 @@ export default function Home() {
         className="snap-start h-screen bg-blue-100 flex justify-center items-center"
       >
         <div className="w-full max-w-5xl text-center px-6">
-          <h2 className="text-3xl md:text-5xl font-bold text-blue-900 mb-8">🎮 Moduri de joc</h2>
+          <h2 className="text-3xl md:text-5xl font-bold text-blue-900 mb-8">{t("games_section_title")}</h2> {/* Traducem titlul secțiunii */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
-                title: "🧑‍🎨 Portret Realist",
-                desc: "Desenează un portret după o fotografie reală.",
-                bullets: [
-                  "Primești o imagine aleatoare",
-                  "Concentrează-te pe detalii",
+                titleKey: "realistic_game_title",
+                descKey: "realistic_game_desc",
+                bulletsKeys: [
+                  "realistic_bullet1",
+                  "realistic_bullet2",
                 ],
               },
               {
-                title: "😜 Caricatură",
-                desc: "Creează personaje amuzante din trăsături aleatorii.",
-                bullets: [
-                  "Primești trăsături ca „ochi mari”, „nas lung”",
-                  "Desenează creativ",
+                titleKey: "caricature_game_title",
+                descKey: "caricature_game_desc",
+                bulletsKeys: [
+                  "caricature_bullet1",
+                  "caricature_bullet2",
                 ],
               },
-            ].map(({ title, desc, bullets }) => (
+            ].map(({ titleKey, descKey, bulletsKeys }) => ( // Aici destructurăm titleKey, descKey și bulletsKeys
               <div
-                key={title}
+                key={titleKey} // Folosim titleKey ca cheie unică
                 className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition text-left"
               >
-                <h3 className="text-2xl font-bold text-blue-800 mb-3">{title}</h3>
-                <p className="text-gray-700 mb-2">{desc}</p>
+                <h3 className="text-2xl font-bold text-blue-800 mb-3">{t(titleKey)}</h3> {/* Traducem titlul */}
+                <p className="text-gray-700 mb-2">{t(descKey)}</p> {/* Traducem descrierea */}
                 <ul className="list-disc pl-5 text-gray-600">
-                  {bullets.map((b, i) => (
-                    <li key={i}>{b}</li>
+                  {bulletsKeys.map((bKey, i) => ( // Iterăm prin cheile pentru bullet points
+                    <li key={i}>{t(bKey)}</li> // Traducem fiecare bullet point
                   ))}
                 </ul>
               </div>
@@ -114,7 +121,7 @@ export default function Home() {
             onClick={() => navigate("/games")}
             className="mt-10 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
           >
-            Începe un joc
+            {t("start_game")} {/* Traducem textul butonului */}
           </button>
         </div>
       </section>
