@@ -9,7 +9,7 @@ const TOOL_BRUSH = "brush";
 const TOOL_PEN = "pen";
 const TOOL_ERASER = "eraser";
 const TOOL_BUCKET = "bucket";
-
+const TOOL_EYEDROPPER = "eyedropper"; // Adăugat eyedropper
 
 function hexToRgba(hex, alpha = 1) {
   let c = hex.replace("#", "");
@@ -115,6 +115,25 @@ export default function Canvas({ canvasSize = 460, onChange }) {
       return;
     }
 
+    if (tool === TOOL_EYEDROPPER) { // Logica pentru Eyedropper
+      const imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+      const px = Math.floor(pos.x);
+      const py = Math.floor(pos.y);
+      let pickedColor = "#ffffff"; // default alb
+      if (px >= 0 && py >= 0 && px < canvasSize && py < canvasSize) {
+        const i = (py * canvasSize + px) * 4;
+        const data = imageData.data;
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        pickedColor = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+      }
+      setColor(pickedColor);
+      setTool(TOOL_PENCIL); // Setează înapoi la pencil după ce alege culoarea
+      isDrawing.current = false;
+      return;
+    }
+
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = strokeWidth;
@@ -157,7 +176,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
-    } else {
+    } else if (tool !== TOOL_EYEDROPPER && tool !== TOOL_BUCKET) { // Asigură-te că nu desenează când e eyedropper sau bucket
       ctx.globalCompositeOperation = 'source-over';
       ctx.strokeStyle = color;
       ctx.lineWidth = strokeWidth;
@@ -206,12 +225,13 @@ export default function Canvas({ canvasSize = 460, onChange }) {
     konvaDrawingImageRef.current.src = canvas.toDataURL();
   }, [tool, strokeWidth, color, opacity]);
 
-  const handleMouseUp = useCallback(() => {
+    const handleMouseUp = useCallback(() => {
     isDrawing.current = false;
     const canvas = hiddenCanvasRef.current;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
+
     if (lastPos.current && tool === TOOL_PEN) {
       ctx.lineWidth = strokeWidth;
       ctx.beginPath();
@@ -219,8 +239,13 @@ export default function Canvas({ canvasSize = 460, onChange }) {
       ctx.lineTo(lastPos.current.x + 0.001, lastPos.current.y + 0.001);
       ctx.stroke();
     }
+
     lastPos.current = null;
-    updateCanvasImage(canvas.toDataURL());
+
+    // DOAR dacă NU e galeata sau eyedropper, actualizăm imaginea
+    if (tool !== TOOL_BUCKET && tool !== TOOL_EYEDROPPER) { // Aici am adăugat condiția pentru TOOL_EYEDROPPER
+      updateCanvasImage(canvas.toDataURL());
+    }
   }, [updateCanvasImage, tool, strokeWidth]);
 
   const handleUndo = useCallback(() => {
@@ -267,18 +292,28 @@ export default function Canvas({ canvasSize = 460, onChange }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleUndo, handleRedo]);
 
+  const cursorStyle = () => {
+    if (!cursorPos) return 'default';
+
+    if (tool === TOOL_EYEDROPPER || tool === TOOL_BUCKET) {
+      return 'crosshair';
+    }
+
+    if (tool === TOOL_ERASER) return 'crosshair';
+    return 'default';
+  };
+
   return (
     <main className="flex flex-col md:flex-row h-full pt-16">
       {/* Sidebar cu controale */}
       <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 flex-shrink-0 pt-8">
         <div className="flex flex-wrap gap-2 mb-4">
-          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET].map((tName) => (
+          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET, TOOL_EYEDROPPER].map((tName) => ( // Adăugat TOOL_EYEDROPPER aici
             <button
               key={tName}
               onClick={() => {
                 setTool(tName);
                 isDrawing.current = false;
-                
               }}
               style={{
                 padding: "8px 16px",
@@ -297,72 +332,71 @@ export default function Canvas({ canvasSize = 460, onChange }) {
           ))}
         </div>
         <div className="mb-4">
-  <label className="block mb-1 text-black">
-    {t("diameter")} ({strokeWidth}px)
-  </label>
-  <input
-    type="range"
-    min={1}
-    max={30}
-    value={strokeWidth}
-    onChange={e => setStrokeWidth(Number(e.target.value))}
-    className="w-full custom-range"
-  />
-</div>
+          <label className="block mb-1 text-black">
+            {t("diameter")} ({strokeWidth}px)
+          </label>
+          <input
+            type="range"
+            min={1}
+            max={30}
+            value={strokeWidth}
+            onChange={e => setStrokeWidth(Number(e.target.value))}
+            className="w-full custom-range"
+          />
+        </div>
 
-<div className="mb-4">
-  <label className="block mb-1 text-black">
-    {t("opacity")} ({Math.round(opacity * 100)}%)
-  </label>
-  <input
-    type="range"
-    min={0.1}
-    max={1}
-    step={0.05}
-    value={opacity}
-    onChange={e => setOpacity(Number(e.target.value))}
-    className="w-full custom-range"
-  />
-</div>
+        <div className="mb-4">
+          <label className="block mb-1 text-black">
+            {t("opacity")} ({Math.round(opacity * 100)}%)
+          </label>
+          <input
+            type="range"
+            min={0.1}
+            max={1}
+            step={0.05}
+            value={opacity}
+            onChange={e => setOpacity(Number(e.target.value))}
+            className="w-full custom-range"
+          />
+        </div>
 
-<style>{`
-  .custom-range::-webkit-slider-runnable-track {
-    background: #297373;
-    height: 6px;
-    border-radius: 4px;
-  }
-  .custom-range::-moz-range-track {
-    background: #297373;
-    height: 6px;
-    border-radius: 4px;
-  }
-  .custom-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #FF8552;
-    cursor: pointer;
-    margin-top: -6px;
-    border: none;
-  }
-  .custom-range::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #FF8552;
-    cursor: pointer;
-    border: none;
-  }
-`}</style>
+        <style>{`
+          .custom-range::-webkit-slider-runnable-track {
+            background: #297373;
+            height: 6px;
+            border-radius: 4px;
+          }
+          .custom-range::-moz-range-track {
+            background: #297373;
+            height: 6px;
+            border-radius: 4px;
+          }
+          .custom-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #FF8552;
+            cursor: pointer;
+            margin-top: -6px;
+            border: none;
+          }
+          .custom-range::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #FF8552;
+            cursor: pointer;
+            border: none;
+          }
+        `}</style>
 
         <div className="mb-4">
           <HexColorPicker color={color} onChange={setColor} />
           <input type="text" value={manualColorInput} onChange={handleManualColorChange} className="mt-2 w-full border rounded px-2 py-1 text-center font-mono" placeholder="#000000" maxLength={7} />
         </div>
       </aside>
-
 
       <section className="w-full md:w-2/3 p-4 flex flex-col items-center bg-white">
         <div style={{ marginTop: "48px" }}></div>
@@ -381,7 +415,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           className="border rounded shadow bg-white"
-          style={{ width: `${canvasSize}px`, height: `${canvasSize}px` }}
+          style={{ width: `${canvasSize}px`, height: `${canvasSize}px`, cursor: cursorStyle() }}
         >
           <Layer>
             <KonvaImage
@@ -392,7 +426,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               height={canvasSize}
               opacity={1}
             />
-            {cursorPos && (
+            {cursorPos && (tool !== TOOL_BUCKET && tool !== TOOL_EYEDROPPER) && ( // Cercul pentru cursor, exclus eyedropper și bucket
               <Circle
                 x={cursorPos.x}
                 y={cursorPos.y}
@@ -404,12 +438,23 @@ export default function Canvas({ canvasSize = 460, onChange }) {
                 listening={false}
               />
             )}
+            {cursorPos && (tool === TOOL_EYEDROPPER || tool === TOOL_BUCKET) && ( // Cerc specific pentru eyedropper/bucket
+              <Circle
+                x={cursorPos.x}
+                y={cursorPos.y}
+                radius={10}
+                stroke="black"
+                strokeWidth={1}
+                fillEnabled={false}
+                listening={false}
+              />
+            )}
           </Layer>
         </Stage>
         <div className="flex gap-2 mt-4 mb-4 w-full max-w-md">
           <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white"
-           disabled={history.length === 0}
-           style={{
+            disabled={history.length === 0}
+            style={{
               flex: 1,
               padding: "10px",
               borderRadius: "6px",
@@ -422,8 +467,8 @@ export default function Canvas({ canvasSize = 460, onChange }) {
             }}>
             {t("undo")}</button> {/* Tradus "Undo" */}
           <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white"
-          disabled={redoStack.length === 0}
-          style={{
+            disabled={redoStack.length === 0}
+            style={{
               flex: 1,
               padding: "10px",
               borderRadius: "6px",
@@ -447,15 +492,14 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               flex: 1,
               padding: "10px",
               borderRadius: "6px",
-              border: "2px solid #297373",  
+              border: "2px solid #297373",
               backgroundColor: "#c92020ff",
               color: "#fff",
               fontWeight: "700",
               transition: "background-color 0.3s",
             }}
-            >
+          >
             {t("reset")} {/* Tradus "Reset" */}
-            
           </button>
         </div>
       </section>
