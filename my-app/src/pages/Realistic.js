@@ -13,7 +13,7 @@ const Realistic = ({ endTime }) => {
   const [loadingPortrait, setLoadingPortrait] = useState(true);
 
   const [timeLeft, setTimeLeft] = useState(
-    endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 60
+    endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 30
   );
   const [drawingUrl, setDrawingUrl] = useState(null);
   const canvasRef = useRef();
