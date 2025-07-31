@@ -14,9 +14,11 @@ import Whole from './pages/Whole';
 import Room from './pages/Room';
 import JoinRoom from './pages/JoinRoom';
 
-import Canvas from './components/CanvasTest';
 import Admin from './pages/Admin';
 import AdminAuth from './pages/AdminAuth';
+
+import Caricature from './pages/Caricature';
+import Realistic from './pages/Realistic';
 
 function App() {
   return (
@@ -36,9 +38,11 @@ function App() {
           <Route path="/room/:roomName" element={<Room />} />
           <Route path="/join" element={<JoinRoom />} />
           
-          <Route path='/Canvas' element={<Canvas/>} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/adminAuth" element={<AdminAuth />} />
+
+          <Route path="/caricature" element={<Caricature />} />
+          <Route path="/realistic" element={<Realistic />} />
         </Routes>
       </div>
     </Router>

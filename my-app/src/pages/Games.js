@@ -11,11 +11,13 @@ const Games = () => {
       titleKey: "realistic",
       descriptionKey: "realistic_desc",
       mode: "realistic",
+      url: "/realistic",
     },
     {
       titleKey: "caricature",
       descriptionKey: "caricature_desc",
       mode: "caricature",
+      url: "/caricature",
     },
   ];
 
@@ -23,8 +25,8 @@ const Games = () => {
     i18n.changeLanguage(lng);
   };
 
-  const handleSelectGame = (mode) => {
-    navigate(`/join?mode=${mode}`);
+  const handleSelectGame = (url) => {
+    navigate(url);
   };
 
   return (
@@ -42,7 +44,7 @@ const Games = () => {
         {games.map((game, index) => (
           <div
             key={index}
-            onClick={() => handleSelectGame(game.mode)}
+            onClick={() => handleSelectGame(game.url)}
             className="group rounded-2xl p-8 cursor-pointer transition-transform transform shadow-md"
             style={{ backgroundColor: "white", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
             onMouseEnter={(e) => {
