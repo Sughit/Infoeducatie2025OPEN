@@ -2,22 +2,24 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Canvas from "../components/Canvas";
 
+function joinUrl(base = '', endpoint = '') {
+  return `${base.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+}
+
 const Eye = () => {
+  const base = process.env.REACT_APP_SOCKET_URL || '';
+
+  // State for eye-images list
   const [images, setImages] = useState([]);
   const [index, setIndex] = useState(0);
   const [imageWidth, setImageWidth] = useState(384);
   const imageRef = useRef(null);
 
-  const base = process.env.REACT_APP_SOCKET_URL || '';
-  // Helper-derived URLs
-  const baseEyeURL = joinUrl(base, 'sketches/eye');
-
-  // State for eye-images list
-  const [eyeImages, setEyeImages] = useState([]);
+  // Fetch eye-images on mount
   useEffect(() => {
     fetch(joinUrl(base, 'api/eye-images'))
       .then(res => res.json())
-      .then(data => setEyeImages(data))
+      .then(data => setImages(data))
       .catch(err => console.error('Eroare la încărcare imagini:', err));
   }, [base]);
 
@@ -41,7 +43,7 @@ const Eye = () => {
   };
 
   const currentImage = images[index]
-    ? `${baseURL}/${images[index]}`
+    ? `${base}sketches/eye/${images[index]}`
     : null;
 
   return (
