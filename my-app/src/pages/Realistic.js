@@ -1,136 +1,124 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../components/Canvas';
 
-const Realistic = ({ socket, players, room, ownNickname, endTime }) => {
-  // Definim state și ref-uri
-  const [timeLeft, setTimeLeft] = useState(() =>
-    endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 5
+const Realistic = ({ endTime }) => {
+  // Portrait image state
+  const [portraitPath, setPortraitPath] = useState('');
+  const [portraitError, setPortraitError] = useState(null);
+  const [loadingPortrait, setLoadingPortrait] = useState(true);
+
+  // Timer and drawing state
+  const [timeLeft, setTimeLeft] = useState(
+    endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 60
   );
-  const [drawings, setDrawings] = useState({});
-  // Pentru capturarea URI-ului desenului curent
   const [drawingUrl, setDrawingUrl] = useState(null);
   const canvasRef = useRef();
-  const emittedRef = useRef(false);
-  const containerRef = useRef(null);
-  const [canvasSize, setCanvasSize] = useState(384);
 
   // Prevent page scroll
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = original;
+    return () => { document.body.style.overflow = original; };
+  }, []);
+  
+  useEffect(() => {
+    const fetchPortrait = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_SOCKET_URL.replace(/\/+$/, '')}/api/portret`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        // data.image may include 'public/portret/...', so extract filename
+        const fileName = data.image.split('/').pop();
+        const baseUrl = process.env.REACT_APP_SOCKET_URL.replace(/\/+$/, '');
+        setPortraitPath(`${baseUrl}/portret/${fileName}`);
+      } catch (err) {
+        console.error('Eroare la încărcare portret:', err);
+        setPortraitError(err);
+      } finally {
+        setLoadingPortrait(false);
+      }
     };
+    fetchPortrait();
   }, []);
 
-  // Synced countdown using requestAnimationFrame for endTime
+  // Sync timer with endTime
   useEffect(() => {
     if (!endTime) return;
-    setTimeLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
     let animationFrame;
     const updateTimer = () => {
       const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
       setTimeLeft(remaining);
-      if (remaining > 0) {
-        animationFrame = requestAnimationFrame(updateTimer);
-      }
+      if (remaining > 0) animationFrame = requestAnimationFrame(updateTimer);
     };
-    animationFrame = requestAnimationFrame(updateTimer);
+    updateTimer();
     return () => cancelAnimationFrame(animationFrame);
   }, [endTime]);
 
-  // Local countdown fallback if no endTime provided
+  // Fallback interval timer
   useEffect(() => {
     if (endTime) return;
-    const localTimer = setInterval(() => {
+    const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          clearInterval(localTimer);
+          clearInterval(timer);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(localTimer);
+    return () => clearInterval(timer);
   }, [endTime]);
 
-  // Receive caricature results
+  // Export drawing when time finishes
   useEffect(() => {
-    const handler = payload => {
-      console.log(`[CLIENT][caricature_result] got payload:`, payload);
-      setDrawings(prev => ({ ...prev, [payload.nickname]: payload.drawing }));
-    };
-    console.log("[CLIENT] registering caricature_result handler");
-    socket.on('caricature_result', handler);
-    return () => socket.off('caricature_result', handler);
-  }, [socket]);
-
-    // Emiterea desenului propriu la final de rundă și export
-  useEffect(() => {
-    if (timeLeft === 0 && !emittedRef.current) {
-      // exportă imaginea desenată
+    if (timeLeft === 0 && !drawingUrl) {
       const url = canvasRef.current?.handleExport();
-      console.log(`[CLIENT][export] time's up, exporting image:`, url?.substring(0,50) + "…");
-      // actualizează drawingUrl pentru afișare imediată
       if (url) setDrawingUrl(url);
-      // emite payload-ul cu desenul exportat
-      socket.emit('caricature_result', { nickname: ownNickname, drawing: url });
-      console.log(`[CLIENT] emitted caricature_result for ${ownNickname}`);
-      emittedRef.current = true;
     }
-  }, [timeLeft, ownNickname, socket]);
+  }, [timeLeft, drawingUrl]);
 
-    // --- renderizarea componentei ---
   const roundOver = timeLeft <= 0;
-  const allDrawingsReceived = players.list.every(nick => drawings[nick]);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full">
-      {/* Zona de desenat sau afișare caricatură proprie */}
+      {/* Drawing area */}
       <div className="flex-1 flex items-center justify-center bg-gray-100">
         {!roundOver ? (
-          <Canvas ref={canvasRef} canvasSize={canvasSize} onChange={setDrawingUrl} />
+          <Canvas ref={canvasRef} canvasSize={384} onChange={setDrawingUrl} />
         ) : (
           <img
-            src={drawings[ownNickname] || drawingUrl}
-            alt="Caricatura ta"
+            src={drawingUrl}
+            alt="Portret realist"
             className="w-full h-full rounded shadow border"
           />
         )}
       </div>
 
-      {/* Zona de caricaturi finale: așteaptă ca ambii să trimită */}
+      {/* Portrait and timer info */}
       <div className="flex-1 flex flex-col items-center justify-center bg-white p-6 mt-24">
-        {roundOver && !allDrawingsReceived ? (
-          <p className="text-xl font-medium">Aștept până toată lumea trimite caricatura...</p>
-        ) : (!roundOver ? (
+        {!roundOver && (
           <>
-            <h2 className="text-2xl font-bold mb-4">Trăsături ({timeLeft}s)</h2>
-            <ul className="list-disc list-inside space-y-2 flex-1 mb-4 w-full">
-              {Object.entries(players.traits).map(([trait, value]) => (
-                <li key={trait} className="text-lg">
-                  <strong>{trait}:</strong> {value}
-                </li>
-              ))}
-            </ul>
+            <h2 className="text-2xl font-bold mb-4">Imagine Portret ({timeLeft}s)</h2>
+            {loadingPortrait ? (
+              <p>Se încarcă portretul...</p>
+            ) : portraitError ? (
+              <p className="text-red-600">Eroare la încărcare portret.</p>
+            ) : (
+              <img
+                src={portraitPath}
+                alt="Portret aleator"
+                className="max-w-full max-h-64 rounded shadow"
+              />
+            )}
           </>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 w-full h-full">
-            {players.list.map(nick => (
-              <div key={nick} className="flex flex-col items-center">
-                <img
-                  src={drawings[nick]}
-                  alt={`${nick} caricature`}
-                  className="w-full h-auto max-h-full rounded shadow border"
-                />
-                <p className="mt-2 text-lg font-medium">{nick}</p>
-              </div>
-            ))}
-          </div>
-        ))}
+        )}
+
+        {roundOver && (
+          <p className="text-xl font-medium">Timpul s-a încheiat, ai desenat portretul!</p>
+        )}
       </div>
     </div>
   );
-}
+};
 
 export default Realistic;
