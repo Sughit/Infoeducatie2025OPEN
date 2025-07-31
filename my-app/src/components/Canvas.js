@@ -9,7 +9,7 @@ const TOOL_BRUSH = "brush";
 const TOOL_PEN = "pen";
 const TOOL_ERASER = "eraser";
 const TOOL_BUCKET = "bucket";
-const TOOL_EYEDROPPER = "eyedropper"; // Adăugat eyedropper
+const TOOL_EYEDROPPER = "eyedropper";
 
 function hexToRgba(hex, alpha = 1) {
   let c = hex.replace("#", "");
@@ -115,7 +115,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
       return;
     }
 
-    if (tool === TOOL_EYEDROPPER) { // Logica pentru Eyedropper
+    if (tool === TOOL_EYEDROPPER) {
       const imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
       const px = Math.floor(pos.x);
       const py = Math.floor(pos.y);
@@ -129,7 +129,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
         pickedColor = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
       }
       setColor(pickedColor);
-      setTool(TOOL_PENCIL); // Setează înapoi la pencil după ce alege culoarea
+      setTool(TOOL_PENCIL);
       isDrawing.current = false;
       return;
     }
@@ -176,7 +176,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
       ctx.moveTo(lastPos.current.x, lastPos.current.y);
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
-    } else if (tool !== TOOL_EYEDROPPER && tool !== TOOL_BUCKET) { // Asigură-te că nu desenează când e eyedropper sau bucket
+    } else if (tool !== TOOL_EYEDROPPER && tool !== TOOL_BUCKET) {
       ctx.globalCompositeOperation = 'source-over';
       ctx.strokeStyle = color;
       ctx.lineWidth = strokeWidth;
@@ -242,8 +242,8 @@ export default function Canvas({ canvasSize = 460, onChange }) {
 
     lastPos.current = null;
 
-    // DOAR dacă NU e galeata sau eyedropper, actualizăm imaginea
-    if (tool !== TOOL_BUCKET && tool !== TOOL_EYEDROPPER) { // Aici am adăugat condiția pentru TOOL_EYEDROPPER
+
+    if (tool !== TOOL_BUCKET && tool !== TOOL_EYEDROPPER) {
       updateCanvasImage(canvas.toDataURL());
     }
   }, [updateCanvasImage, tool, strokeWidth]);
@@ -305,7 +305,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
 
   return (
     <main className="flex flex-col md:flex-row h-full pt-16">
-      {/* Sidebar cu controale */}
+      {/* Sidebar*/}
       <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 flex-shrink-0 pt-8">
         <div className="flex flex-wrap gap-2 mb-4">
           {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET, TOOL_EYEDROPPER].map((tName) => ( // Adăugat TOOL_EYEDROPPER aici
@@ -426,7 +426,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               height={canvasSize}
               opacity={1}
             />
-            {cursorPos && (tool !== TOOL_BUCKET && tool !== TOOL_EYEDROPPER) && ( // Cercul pentru cursor, exclus eyedropper și bucket
+            {cursorPos && (tool !== TOOL_BUCKET && tool !== TOOL_EYEDROPPER) && (
               <Circle
                 x={cursorPos.x}
                 y={cursorPos.y}
@@ -438,7 +438,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
                 listening={false}
               />
             )}
-            {cursorPos && (tool === TOOL_EYEDROPPER || tool === TOOL_BUCKET) && ( // Cerc specific pentru eyedropper/bucket
+            {cursorPos && (tool === TOOL_EYEDROPPER || tool === TOOL_BUCKET) && (
               <Circle
                 x={cursorPos.x}
                 y={cursorPos.y}
@@ -465,7 +465,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               fontWeight: "700",
               transition: "background-color 0.3s",
             }}>
-            {t("undo")}</button> {/* Tradus "Undo" */}
+            {t("undo")}</button>
           <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white"
             disabled={redoStack.length === 0}
             style={{
@@ -479,7 +479,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               fontWeight: "700",
               transition: "background-color 0.3s",
             }}
-          >{t("redo")}</button> {/* Tradus "Redo" */}
+          >{t("redo")}</button>
           <button
             onClick={() => {
               setCurrentCanvasDataUrl("");
@@ -499,7 +499,7 @@ export default function Canvas({ canvasSize = 460, onChange }) {
               transition: "background-color 0.3s",
             }}
           >
-            {t("reset")} {/* Tradus "Reset" */}
+            {t("reset")}
           </button>
         </div>
       </section>
