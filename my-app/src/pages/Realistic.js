@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../components/Canvas';
 
+// Helper to join base URL and endpoint with exactly one slash
+function joinUrl(base = '', endpoint = '') {
+  return `${base.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+}
+
 const Realistic = ({ endTime }) => {
   // Portrait image state
   const [portraitPath, setPortraitPath] = useState('');
@@ -20,17 +25,17 @@ const Realistic = ({ endTime }) => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = original; };
   }, []);
-  
+
+  // Fetch random portrait on mount
   useEffect(() => {
     const fetchPortrait = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_SOCKET_URL.replace(/\/+$/, '')}/api/portret`);
+        const base = process.env.REACT_APP_SOCKET_URL || '';
+        const response = await fetch(joinUrl(base, '/api/portret'));
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        // data.image may include 'public/portret/...', so extract filename
         const fileName = data.image.split('/').pop();
-        const baseUrl = process.env.REACT_APP_SOCKET_URL.replace(/\/+$/, '');
-        setPortraitPath(`${baseUrl}/portret/${fileName}`);
+        setPortraitPath(joinUrl(base, `/portret/${fileName}`));
       } catch (err) {
         console.error('Eroare la încărcare portret:', err);
         setPortraitError(err);
