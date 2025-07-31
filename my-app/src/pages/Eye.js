@@ -2,20 +2,26 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Canvas from "../components/Canvas";
 
+function joinUrl(base = '', endpoint = '') {
+  return `${base.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+}
+
 const Eye = () => {
+  const base = process.env.REACT_APP_SOCKET_URL || '';
+
+  // State for eye-images list
   const [images, setImages] = useState([]);
   const [index, setIndex] = useState(0);
   const [imageWidth, setImageWidth] = useState(384);
   const imageRef = useRef(null);
 
-  const baseURL = `${process.env.REACT_APP_SOCKET_URL}sketches/eye`;
-
+  // Fetch eye-images on mount
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_SOCKET_URL}api/eye-images`)
-      .then((res) => res.json())
-      .then((data) => setImages(data))
-      .catch((err) => console.error("Eroare la încărcare imagini:", err));
-  }, []);
+    fetch(joinUrl(base, 'api/eye-images'))
+      .then(res => res.json())
+      .then(data => setImages(data))
+      .catch(err => console.error('Eroare la încărcare imagini:', err));
+  }, [base]);
 
   useEffect(() => {
     function updateSize() {
@@ -37,7 +43,7 @@ const Eye = () => {
   };
 
   const currentImage = images[index]
-    ? `${baseURL}/${images[index]}`
+    ? `${base}sketches/eye/${images[index]}`
     : null;
 
   return (
