@@ -8,14 +8,18 @@ const Eye = () => {
   const [imageWidth, setImageWidth] = useState(384);
   const imageRef = useRef(null);
 
-  const baseURL = `${process.env.REACT_APP_SOCKET_URL}sketches/eye`;
+  const base = process.env.REACT_APP_SOCKET_URL || '';
+  // Helper-derived URLs
+  const baseEyeURL = joinUrl(base, 'sketches/eye');
 
+  // State for eye-images list
+  const [eyeImages, setEyeImages] = useState([]);
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_SOCKET_URL}api/eye-images`)
-      .then((res) => res.json())
-      .then((data) => setImages(data))
-      .catch((err) => console.error("Eroare la încărcare imagini:", err));
-  }, []);
+    fetch(joinUrl(base, 'api/eye-images'))
+      .then(res => res.json())
+      .then(data => setEyeImages(data))
+      .catch(err => console.error('Eroare la încărcare imagini:', err));
+  }, [base]);
 
   useEffect(() => {
     function updateSize() {
