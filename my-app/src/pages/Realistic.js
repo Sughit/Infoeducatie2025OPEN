@@ -2,19 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../components/Canvas';
 
 const Realistic = ({ endTime }) => {
-  // Portrait image state
+
   const [portraitPath, setPortraitPath] = useState('');
   const [portraitError, setPortraitError] = useState(null);
   const [loadingPortrait, setLoadingPortrait] = useState(true);
 
-  // Timer and drawing state
   const [timeLeft, setTimeLeft] = useState(
     endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : 60
   );
   const [drawingUrl, setDrawingUrl] = useState(null);
   const canvasRef = useRef();
 
-  // Prevent page scroll
+
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -27,7 +26,6 @@ const Realistic = ({ endTime }) => {
         const response = await fetch(`${process.env.REACT_APP_SOCKET_URL.replace(/\/+$/, '')}/api/portret`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        // data.image may include 'public/portret/...', so extract filename
         const fileName = data.image.split('/').pop();
         const baseUrl = process.env.REACT_APP_SOCKET_URL.replace(/\/+$/, '');
         setPortraitPath(`${baseUrl}/portret/${fileName}`);
@@ -41,7 +39,6 @@ const Realistic = ({ endTime }) => {
     fetchPortrait();
   }, []);
 
-  // Sync timer with endTime
   useEffect(() => {
     if (!endTime) return;
     let animationFrame;
@@ -54,7 +51,6 @@ const Realistic = ({ endTime }) => {
     return () => cancelAnimationFrame(animationFrame);
   }, [endTime]);
 
-  // Fallback interval timer
   useEffect(() => {
     if (endTime) return;
     const timer = setInterval(() => {
@@ -69,7 +65,7 @@ const Realistic = ({ endTime }) => {
     return () => clearInterval(timer);
   }, [endTime]);
 
-  // Export drawing when time finishes
+
   useEffect(() => {
     if (timeLeft === 0 && !drawingUrl) {
       const url = canvasRef.current?.handleExport();
@@ -83,16 +79,13 @@ const Realistic = ({ endTime }) => {
     <div className="flex flex-col md:flex-row h-screen w-full">
       {/* Drawing area */}
       <div className="flex-1 flex items-center justify-center bg-gray-100">
-        {!roundOver ? (
-          <Canvas ref={canvasRef} canvasSize={384} onChange={setDrawingUrl} />
-        ) : (
-          <img
-            src={drawingUrl}
-            alt="Portret realist"
-            className="w-full h-full rounded shadow border"
-          />
-        )}
-      </div>
+  <Canvas
+    ref={canvasRef}
+    canvasSize={384}
+    onChange={setDrawingUrl}
+    isDrawingEnabled={!roundOver}
+  />
+</div>
 
       {/* Portrait and timer info */}
       <div className="flex-1 flex flex-col items-center justify-center bg-white p-6 mt-24">

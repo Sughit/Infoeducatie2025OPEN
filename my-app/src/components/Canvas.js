@@ -42,7 +42,7 @@ function floodFill(imageData, x, y, fillColor) {
   }
 }
 
-export default function Canvas({ canvasSize = 460, onChange }) {
+export default function Canvas({ canvasSize = 460, onChange, isDrawingEnabled = true}) { // Adăugat isDrawingEnabled
   const { t } = useTranslation();
 
   const [currentCanvasDataUrl, setCurrentCanvasDataUrl] = useState("");
@@ -307,95 +307,99 @@ export default function Canvas({ canvasSize = 460, onChange }) {
     <main className="flex flex-col md:flex-row h-full pt-16">
       {/* Sidebar*/}
       <aside className="w-full md:w-1/3 p-4 overflow-auto bg-gray-50 flex-shrink-0 pt-8">
-        <div className="flex flex-wrap gap-2 mb-4">
-          {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET, TOOL_EYEDROPPER].map((tName) => ( // Adăugat TOOL_EYEDROPPER aici
-            <button
-              key={tName}
-              onClick={() => {
-                setTool(tName);
-                isDrawing.current = false;
-              }}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "6px",
-                border: tool === tName ? "2px solid #297373" : "2px solid #297373",
-                backgroundColor: tool === tName ? "#FF8552" : "#FFFFFF",
-                color: tool === tName ? "#FFFFFF" : "#297373",
-                fontWeight: tool === tName ? "700" : "500",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-              }}
-              className={`px-3 py-2 rounded border ${tool === tName ? "bg-blue-600 text-white" : "bg-white"}`}
-            >
-              {t(tName)}
-            </button>
-          ))}
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 text-black">
-            {t("diameter")} ({strokeWidth}px)
-          </label>
-          <input
-            type="range"
-            min={1}
-            max={30}
-            value={strokeWidth}
-            onChange={e => setStrokeWidth(Number(e.target.value))}
-            className="w-full custom-range"
-          />
-        </div>
+        {isDrawingEnabled &&( // Ascunde controalele dacă desenul e dezactivat
+          <>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[TOOL_PENCIL, TOOL_BRUSH, TOOL_PEN, TOOL_ERASER, TOOL_BUCKET, TOOL_EYEDROPPER].map((tName) => (
+                <button
+                  key={tName}
+                  onClick={() => {
+                    setTool(tName);
+                    isDrawing.current = false;
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: tool === tName ? "2px solid #297373" : "2px solid #297373",
+                    backgroundColor: tool === tName ? "#FF8552" : "#FFFFFF",
+                    color: tool === tName ? "#FFFFFF" : "#297373",
+                    fontWeight: tool === tName ? "700" : "500",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  className={`px-3 py-2 rounded border ${tool === tName ? "bg-blue-600 text-white" : "bg-white"}`}
+                >
+                  {t(tName)}
+                </button>
+              ))}
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-black">
+                {t("diameter")} ({strokeWidth}px)
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={30}
+                value={strokeWidth}
+                onChange={e => setStrokeWidth(Number(e.target.value))}
+                className="w-full custom-range"
+              />
+            </div>
 
-        <div className="mb-4">
-          <label className="block mb-1 text-black">
-            {t("opacity")} ({Math.round(opacity * 100)}%)
-          </label>
-          <input
-            type="range"
-            min={0.1}
-            max={1}
-            step={0.05}
-            value={opacity}
-            onChange={e => setOpacity(Number(e.target.value))}
-            className="w-full custom-range"
-          />
-        </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-black">
+                {t("opacity")} ({Math.round(opacity * 100)}%)
+              </label>
+              <input
+                type="range"
+                min={0.1}
+                max={1}
+                step={0.05}
+                value={opacity}
+                onChange={e => setOpacity(Number(e.target.value))}
+                className="w-full custom-range"
+              />
+            </div>
 
-        <style>{`
-          .custom-range::-webkit-slider-runnable-track {
-            background: #297373;
-            height: 6px;
-            border-radius: 4px;
-          }
-          .custom-range::-moz-range-track {
-            background: #297373;
-            height: 6px;
-            border-radius: 4px;
-          }
-          .custom-range::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #FF8552;
-            cursor: pointer;
-            margin-top: -6px;
-            border: none;
-          }
-          .custom-range::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #FF8552;
-            cursor: pointer;
-            border: none;
-          }
-        `}</style>
+            <style>{`
+              .custom-range::-webkit-slider-runnable-track {
+                background: #297373;
+                height: 6px;
+                border-radius: 4px;
+              }
+              .custom-range::-moz-range-track {
+                background: #297373;
+                height: 6px;
+                border-radius: 4px;
+              }
+              .custom-range::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #FF8552;
+                cursor: pointer;
+                margin-top: -6px;
+                border: none;
+              }
+              .custom-range::-moz-range-thumb {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #FF8552;
+                cursor: pointer;
+                border: none;
+              }
+            `}</style>
 
-        <div className="mb-4">
-          <HexColorPicker color={color} onChange={setColor} />
-          <input type="text" value={manualColorInput} onChange={handleManualColorChange} className="mt-2 w-full border rounded px-2 py-1 text-center font-mono" placeholder="#000000" maxLength={7} />
-        </div>
+            <div className="mb-4">
+              <HexColorPicker color={color} onChange={setColor} />
+              <input type="text" value={manualColorInput} onChange={handleManualColorChange} className="mt-2 w-full border rounded px-2 py-1 text-center font-mono" placeholder="#000000" maxLength={7} />
+            </div>
+          </>
+        )}
       </aside>
 
       <section className="w-full md:w-2/3 p-4 flex flex-col items-center bg-white">
@@ -411,9 +415,9 @@ export default function Canvas({ canvasSize = 460, onChange }) {
           ref={stageRef}
           width={canvasSize}
           height={canvasSize}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
+          onMouseDown={isDrawingEnabled ? handleMouseDown : null} // Condiționat
+          onMouseMove={isDrawingEnabled ? handleMouseMove : null} // Condiționat
+          onMouseUp={isDrawingEnabled ? handleMouseUp : null} // Condiționat
           className="border rounded shadow bg-white"
           style={{ width: `${canvasSize}px`, height: `${canvasSize}px`, cursor: cursorStyle() }}
         >
@@ -452,55 +456,59 @@ export default function Canvas({ canvasSize = 460, onChange }) {
           </Layer>
         </Stage>
         <div className="flex gap-2 mt-4 mb-4 w-full max-w-md">
-          <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white"
-            disabled={history.length === 0}
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: "6px",
-              border: "2px solid #297373",
-              backgroundColor: history.length === 0 ? "#ccc" : "#FF8552",
-              color: "#fff",
-              cursor: history.length === 0 ? "not-allowed" : "pointer",
-              fontWeight: "700",
-              transition: "background-color 0.3s",
-            }}>
-            {t("undo")}</button>
-          <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white"
-            disabled={redoStack.length === 0}
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: "6px",
-              border: "2px solid #297373",
-              backgroundColor: redoStack.length === 0 ? "#ccc" : "#FF8552",
-              color: "#fff",
-              cursor: redoStack.length === 0 ? "not-allowed" : "pointer",
-              fontWeight: "700",
-              transition: "background-color 0.3s",
-            }}
-          >{t("redo")}</button>
-          <button
-            onClick={() => {
-              setCurrentCanvasDataUrl("");
-              setHistory([]);
-              setRedoStack([]);
-              konvaDrawingImageRef.current = new window.Image();
-            }}
-            className="flex-1 py-2 rounded bg-red-600 text-white"
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: "6px",
-              border: "2px solid #297373",
-              backgroundColor: "#c92020ff",
-              color: "#fff",
-              fontWeight: "700",
-              transition: "background-color 0.3s",
-            }}
-          >
-            {t("reset")}
-          </button>
+          {isDrawingEnabled &&( // Ascunde butoanele dacă desenul e dezactivat
+            <>
+              <button onClick={handleUndo} className="flex-1 py-2 rounded bg-yellow text-white"
+                disabled={history.length === 0}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "6px",
+                  border: "2px solid #297373",
+                  backgroundColor: history.length === 0 ? "#ccc" : "#FF8552",
+                  color: "#fff",
+                  cursor: history.length === 0 ? "not-allowed" : "pointer",
+                  fontWeight: "700",
+                  transition: "background-color 0.3s",
+                }}>
+                {t("undo")}</button>
+              <button onClick={handleRedo} className="flex-1 py-2 rounded bg-green text-white"
+                disabled={redoStack.length === 0}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "6px",
+                  border: "2px solid #297373",
+                  backgroundColor: redoStack.length === 0 ? "#ccc" : "#FF8552",
+                  color: "#fff",
+                  cursor: redoStack.length === 0 ? "not-allowed" : "pointer",
+                  fontWeight: "700",
+                  transition: "background-color 0.3s",
+                }}
+              >{t("redo")}</button>
+              <button
+                onClick={() => {
+                  setCurrentCanvasDataUrl("");
+                  setHistory([]);
+                  setRedoStack([]);
+                  konvaDrawingImageRef.current = new window.Image();
+                }}
+                className="flex-1 py-2 rounded bg-red-600 text-white"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "6px",
+                  border: "2px solid #297373",
+                  backgroundColor: "#c92020ff",
+                  color: "#fff",
+                  fontWeight: "700",
+                  transition: "background-color 0.3s",
+                }}
+              >
+                {t("reset")}
+              </button>
+            </>
+          )}
         </div>
       </section>
     </main>
